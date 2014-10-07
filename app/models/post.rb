@@ -1440,6 +1440,10 @@ class Post < ActiveRecord::Base
         frames:    ugoira_frames.map(&:frame_metadata)
       }
     end
+
+    def ugoira_webm_url
+      file_url.sub(/ugoira\.zip$/, 'webm')
+    end
   end
 
   include FileMethods

@@ -1,0 +1,22 @@
+<%# TODO: put data-ugoira in presenter's data_attributes instead %>
+<%= tag :canvas, id: 'image', width:  post.image_width, height: post.image_height, data: { ugoira: post.ugoira_metadata } %>
+
+<%# TODO: include this in assets %>
+<script src="https://raw.githubusercontent.com/pixiv/zip_player/e1f21d6095e79f7f7de1d79e4ed7acbc2e27a652/zip_player.js"></script>
+
+<%# TODO: put this somewhere better %>
+<%= javascript_tag do %>
+  var options = {
+    canvas:    document.getElementById('image'),
+    source:    $('#image-container').data('file-url'),
+    metadata:  $('#image').data('ugoira'),
+    chunkSize: 300000,
+    loop:      true,
+    autoStart: true
+  };
+
+  var player = new ZipImagePlayer(options);
+<% end %>
+
+<%# TODO: do something less hacky than this regex %>
+<p>Save this Ugoira file (right click and save): (<%= link_to "Zip", post.file_url %> | <%= link_to "Webm", post.ugoira_webm_url %>)</p>
