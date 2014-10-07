@@ -132,6 +132,10 @@ class Post < ActiveRecord::Base
       file_ext =~ /webm/i
     end
 
+    def is_ugoira?
+      file_ext =~ /ugoira.zip/i
+    end
+
     def has_preview?
       is_image? || is_video?
     end

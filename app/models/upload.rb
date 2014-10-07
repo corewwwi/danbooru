@@ -51,7 +51,7 @@ class Upload < ActiveRecord::Base
 
     def validate_file_content_type
       unless is_valid_content_type?
-        raise "invalid content type (only JPEG, PNG, GIF, SWF, and WebM files are allowed)"
+        raise "invalid content type (only JPEG, PNG, GIF, SWF, WebM, and Ugoira files are allowed)"
       end
     end
 
@@ -190,6 +190,10 @@ class Upload < ActiveRecord::Base
     def is_video?
       %w(webm).include?(file_ext)
     end
+
+    def is_ugoira?
+      %w(ugoira.zip).include?(file_ext)
+    end
   end
 
   module ResizerMethods
@@ -227,6 +231,29 @@ class Upload < ActiveRecord::Base
       if is_video?
         self.image_width = video.width
         self.image_height = video.height
+      elsif is_ugoira?
+        # Extract the first file and use its dimensions.
+        #
+        # TODO: Extracting the file then throwing it away is inefficent. It has
+        # to be extracted again during thumbnailing. This should be part of
+        # the ugoira converter instead.
+        Zip::File.open(file_path) do |zipfile|
+          begin
+            temp = Tempfile.new("ugoira")
+
+            # Tell rubyzip to overwrite existing files.
+            # TODO: put this in a better place.
+            Zip.on_exists_proc = true
+
+            zipfile.entries.first.extract(temp.path)
+
+            image_size = ImageSpec.new(temp)
+            self.image_width  = image_size.width
+            self.image_height = image_size.height
+          ensure
+            temp.close!
+          end
+        end
       else
         File.open(file_path, "rb") do |file|
           image_size = ImageSpec.new(file)
@@ -238,13 +265,13 @@ class Upload < ActiveRecord::Base
 
     # Does this file have image dimensions?
     def has_dimensions?
-      %w(jpg gif png swf webm).include?(file_ext)
+      %w(jpg gif png swf webm ugoira.zip).include?(file_ext)
     end
   end
 
   module ContentTypeMethods
     def is_valid_content_type?
-      file_ext =~ /jpg|gif|png|swf|webm/
+      file_ext =~ /jpg|gif|png|swf|webm|ugoira.zip/
     end
 
     def content_type_to_file_ext(content_type)
@@ -263,6 +290,9 @@ class Upload < ActiveRecord::Base
 
       when "video/webm"
         "webm"
+
+      when "application/x-ugoira"
+        "ugoira.zip"
 
       else
         "bin"
@@ -285,6 +315,10 @@ class Upload < ActiveRecord::Base
 
       when /^\x1a\x45\xdf\xa3/
         "video/webm"
+
+      # TODO According to http://en.wikipedia.org/wiki/Zip_(file_format), 0x504B0506 and 0x0504B0708 are also possible?
+      when /^\x50\x4b\x03\x04/
+        "application/x-ugoira"
 
       else
         "application/octet-stream"
@@ -321,18 +355,10 @@ class Upload < ActiveRecord::Base
       source =~ /^https?:\/\// && file_path.blank?
     end
 
-    def is_ugoira?
-      tag_string =~ /\bugoira\b/i
-    end
-
     # Downloads the file to destination_path
     def download_from_source(destination_path)
       download = Downloads::File.new(source, destination_path)
-      if is_ugoira?
-        download.download_ugoira!
-      else
-        download.download!
-      end
+      download.download!
       self.file_path = destination_path
       self.source = download.source
     end
