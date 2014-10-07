@@ -84,6 +84,30 @@ class Upload < ActiveRecord::Base
         raise "video must not be longer than 2 minutes"
       end
     end
+
+    def validate_ugoira
+      is_ugoira? && ::Zip::File.open(file_path) do |zipfile|
+        if zipfile.size == 0
+          raise Upload::Error.new("Zip file must contain at least one image.")
+        elsif zipfile.size > 150
+          # 150 files is the limit on Pixiv.
+          raise Upload::Error.new("Zip file can't contain more than 150 images.")
+        end
+
+        # Pixiv's ugoira zip files never contain compressed files. Checking for
+        # this protects us from zip bombs (i.e. small zip files that extract to
+        # many gigabytes in size) when we later try to extract the zip's contents
+        # to find the image dimensions.
+        if zipfile.entries.any? { |entry| entry.compression_method != Zip::Entry::STORED }
+          raise Upload::Error.new("Zip file must not contain compressed files.")
+        end
+
+        # TODO: extract every file and run file_header_to_content_type over
+        # them to ensure the zip only contains valid image files that are all
+        # of the same file type?
+        # TODO: also check that every file has the same dimensions.
+      end
+    end
   end
 
   module ConversionMethods
@@ -102,6 +126,7 @@ class Upload < ActiveRecord::Base
         validate_md5_confirmation
         validate_no_audio
         validate_video_duration
+        validate_ugoira
         calculate_file_size(file_path)
         if has_dimensions?
           calculate_dimensions(file_path)
