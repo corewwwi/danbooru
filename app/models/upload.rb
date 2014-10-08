@@ -160,7 +160,7 @@ class Upload < ActiveRecord::Base
 
     rescue Exception => x
       update_attributes(:status => "error: #{x.class} - #{x.message}", :backtrace => x.backtrace.join("\n"))
-      
+
     ensure
       delete_temp_file
     end
@@ -236,7 +236,7 @@ class Upload < ActiveRecord::Base
   module ResizerMethods
     def generate_resizes(source_path)
       generate_resize_for(Danbooru.config.small_image_width, Danbooru.config.small_image_width, source_path, 85)
-      if is_image? && image_width > Danbooru.config.large_image_width
+      if (is_image? || is_ugoira?) && image_width > Danbooru.config.large_image_width
         generate_resize_for(Danbooru.config.large_image_width, nil, source_path)
       end
     end
@@ -249,6 +249,20 @@ class Upload < ActiveRecord::Base
       output_path = resized_file_path_for(width)
       if is_image?
         Danbooru.resize(source_path, output_path, width, height, quality)
+      elsif is_ugoira?
+        # Extract the first file and use it as the thumbnail.
+        # TODO: convert the ugoira to webm for the thumbnail and image sample.
+        # TODO: the file was already extracted once to get the dimensions. Shouldn't extract it again.
+        Zip::File.open(file_path) do |zipfile|
+          begin
+            temp = Tempfile.new("ugoira")
+            zipfile.entries.first.extract(temp.path)
+
+            Danbooru.resize(temp.path, output_path, width, height, quality)
+          ensure
+            temp.close!
+          end
+        end
       elsif is_video?
         dimension_ratio = image_width.to_f / image_height
         if dimension_ratio > 1
