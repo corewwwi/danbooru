@@ -236,8 +236,13 @@ class Upload < ActiveRecord::Base
   module ResizerMethods
     def generate_resizes(source_path)
       generate_resize_for(Danbooru.config.small_image_width, Danbooru.config.small_image_width, source_path, 85)
+
       if (is_image? || is_ugoira?) && image_width > Danbooru.config.large_image_width
         generate_resize_for(Danbooru.config.large_image_width, nil, source_path)
+      end
+
+      if is_ugoira?
+        generate_resize_for(image_width, image_height, source_path)
       end
     end
 
@@ -246,22 +251,15 @@ class Upload < ActiveRecord::Base
         raise Error.new("file not found")
       end
 
-      output_path = resized_file_path_for(width)
       if is_image?
+        output_path = resized_file_path_for(width)
         Danbooru.resize(source_path, output_path, width, height, quality)
       elsif is_ugoira?
-        # Extract the first file and use it as the thumbnail.
-        # TODO: convert the ugoira to webm for the thumbnail and image sample.
-        # TODO: the file was already extracted once to get the dimensions. Shouldn't extract it again.
-        Zip::File.open(file_path) do |zipfile|
-          begin
-            temp = Tempfile.new("ugoira")
-            zipfile.entries.first.extract(temp.path)
-
-            Danbooru.resize(temp.path, output_path, width, height, quality)
-          ensure
-            temp.close!
-          end
+        #[:gif, :apng, :webm, :jpg].each do |format|
+        [:webm].each do |format|
+          output_path = resized_file_path_for(width, format.to_s)
+          converter   = PixivUgoiraConverter.new(source_path, output_path, ugoira_frame_data["frames"], width, height, format)
+          converter.process!
         end
       elsif is_video?
         dimension_ratio = image_width.to_f / image_height
@@ -271,6 +269,8 @@ class Upload < ActiveRecord::Base
           width = (height * dimension_ratio).to_i
         end
         video.screenshot(output_path, {:seek_time => 0, :resolution => "#{width}x#{height}"})
+
+        output_path = resized_file_path_for(width)
         FileUtils.chmod(0664, output_path)
       end
     end
@@ -383,15 +383,17 @@ class Upload < ActiveRecord::Base
       "#{Rails.root}/public/data/#{prefix}#{md5}.#{file_ext}"
     end
 
-    def resized_file_path_for(width)
+    def resized_file_path_for(width, file_ext="jpg")
       prefix = Rails.env == "test" ? "test." : ""
 
       case width
       when Danbooru.config.small_image_width
-        "#{Rails.root}/public/data/preview/#{prefix}#{md5}.jpg"
+        "#{Rails.root}/public/data/preview/#{prefix}#{md5}.#{file_ext}"
 
       when Danbooru.config.large_image_width
-        "#{Rails.root}/public/data/sample/#{Danbooru.config.large_image_prefix}#{prefix}#{md5}.jpg"
+        "#{Rails.root}/public/data/sample/#{Danbooru.config.large_image_prefix}#{prefix}#{md5}.#{file_ext}"
+      when image_width
+        "#{Rails.root}/public/data/#{prefix}#{md5}.#{file_ext}"
       end
     end
 

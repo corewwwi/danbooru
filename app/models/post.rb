@@ -98,7 +98,11 @@ class Post < ActiveRecord::Base
         return "/images/download-preview.png"
       end
 
-      "/data/preview/#{file_path_prefix}#{md5}.jpg"
+      if is_ugoira?
+        "/data/preview/#{file_path_prefix}#{md5}.webm"
+      else
+        "/data/preview/#{file_path_prefix}#{md5}.jpg"
+      end
     end
 
     def file_url_for(user)

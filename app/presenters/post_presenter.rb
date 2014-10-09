@@ -21,7 +21,11 @@ class PostPresenter < Presenter
       tag_param = nil
     end
     html << %{<a href="#{path}/#{post.id}#{tag_param}">}
-    html << %{<img src="#{post.preview_file_url}" alt="#{h(post.tag_string)}">}
+    if post.is_ugoira?
+      html << %{<video src="#{post.preview_file_url}" loop="loop" autoplay="autoplay" alt="#{h(post.tag_string)}">}
+    else
+      html << %{<img src="#{post.preview_file_url}" alt="#{h(post.tag_string)}">}
+    end
     html << %{</a>}
 
     if options[:pool]
