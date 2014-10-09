@@ -182,6 +182,18 @@ class Upload < ActiveRecord::Base
         if !uploader.is_contributor? || upload_as_pending?
           p.is_pending = true
         end
+
+        # TODO: Put this crap in a better place?
+        if ugoira_frame_data
+          ugoira_frame_data["frames"].each_with_index do |frame, i|
+            p.ugoira_frames << UgoiraFrame.new(
+              frame:     i,
+              file:      frame["file"],
+              delay:     frame["delay"],
+              mime_type: ugoira_frame_data["mime_type"]
+            )
+          end
+        end
       end
     end
   end
@@ -445,6 +457,24 @@ class Upload < ActiveRecord::Base
     end
   end
 
+  # TODO: This is all a big terrible hack.
+  module UgoiraMethods
+    def ugoira_frame_data
+      @ugoira_frame_data ||= begin
+        if Sources::Strategies::Pixiv.url_match?(source)
+          # TODO: Sources::Site#get was already called once before when
+          # Downloads::Strategies::Pixiv#rewrite was rewriting the source URL.
+          site = Sources::Strategies::Pixiv.new(source)
+          site.get
+
+          # FIXME: This is set by Sources::Strategies::Pixiv to the ugoira
+          # metadata when the source is a ugoira, nil otherwise.
+          site.ugoira
+        end
+      end
+    end
+  end
+
   module SearchMethods
     def uploaded_by(user_id)
       where("uploader_id = ?", user_id)
@@ -507,6 +537,7 @@ class Upload < ActiveRecord::Base
   include StatusMethods
   include UploaderMethods
   include VideoMethods
+  include UgoiraMethods
   extend SearchMethods
   include ApiMethods
 

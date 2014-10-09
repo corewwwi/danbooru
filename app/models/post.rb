@@ -35,6 +35,7 @@ class Post < ActiveRecord::Base
   has_many :children, lambda {order("posts.id")}, :class_name => "Post", :foreign_key => "parent_id"
   has_many :disapprovals, :class_name => "PostDisapproval", :dependent => :destroy
   has_many :favorites, :dependent => :destroy
+  has_many :ugoira_frames, lambda { order("ugoira_frames.frame ASC") }, :dependent => :destroy
   validates_uniqueness_of :md5
   validate :post_is_not_its_own_parent
   attr_accessible :source, :rating, :tag_string, :old_tag_string, :old_parent_id, :old_source, :old_rating, :last_noted_at, :parent_id, :as => [:member, :builder, :gold, :platinum, :contributor, :janitor, :moderator, :admin, :default]
@@ -1431,7 +1432,16 @@ class Post < ActiveRecord::Base
       Iqdb::Command.new(Danbooru.config.iqdb_file).add(self)
     end
   end
-  
+
+  module UgoiraMethods
+    def ugoira_metadata
+      return {
+        mime_type: ugoira_frames.first.mime_type,
+        frames:    ugoira_frames.map(&:frame_metadata)
+      }
+    end
+  end
+
   include FileMethods
   include ImageMethods
   include ApprovalMethods
@@ -1451,6 +1461,7 @@ class Post < ActiveRecord::Base
   extend SearchMethods
   include PixivMethods
   include IqdbMethods
+  include UgoiraMethods
 
   def visible?
     return false if !Danbooru.config.can_user_see_post?(CurrentUser.user, self)

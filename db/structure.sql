@@ -2894,6 +2894,39 @@ ALTER SEQUENCE transaction_log_items_id_seq OWNED BY transaction_log_items.id;
 
 
 --
+-- Name: ugoira_frames; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE ugoira_frames (
+    id integer NOT NULL,
+    post_id integer NOT NULL,
+    frame integer NOT NULL,
+    delay integer NOT NULL,
+    file character varying(255) NOT NULL,
+    mime_type character varying(255) NOT NULL
+);
+
+
+--
+-- Name: ugoira_frames_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE ugoira_frames_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: ugoira_frames_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE ugoira_frames_id_seq OWNED BY ugoira_frames.id;
+
+
+--
 -- Name: uploads; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -4158,6 +4191,13 @@ ALTER TABLE ONLY transaction_log_items ALTER COLUMN id SET DEFAULT nextval('tran
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
+ALTER TABLE ONLY ugoira_frames ALTER COLUMN id SET DEFAULT nextval('ugoira_frames_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY uploads ALTER COLUMN id SET DEFAULT nextval('uploads_id_seq'::regclass);
 
 
@@ -4529,6 +4569,14 @@ ALTER TABLE ONLY tags
 
 ALTER TABLE ONLY transaction_log_items
     ADD CONSTRAINT transaction_log_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ugoira_frames_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY ugoira_frames
+    ADD CONSTRAINT ugoira_frames_pkey PRIMARY KEY (id);
 
 
 --
@@ -6254,6 +6302,13 @@ CREATE INDEX index_forum_topic_visits_on_forum_topic_id ON forum_topic_visits US
 
 
 --
+-- Name: index_forum_topic_visits_on_last_read_at; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_forum_topic_visits_on_last_read_at ON forum_topic_visits USING btree (last_read_at);
+
+
+--
 -- Name: index_forum_topic_visits_on_user_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -6695,6 +6750,13 @@ CREATE INDEX index_transaction_log_items_on_user_id ON transaction_log_items USI
 
 
 --
+-- Name: index_ugoira_frames_on_post_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_ugoira_frames_on_post_id ON ugoira_frames USING btree (post_id);
+
+
+--
 -- Name: index_uploads_on_uploader_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -7054,4 +7116,6 @@ INSERT INTO schema_migrations (version) VALUES ('20140701224800');
 INSERT INTO schema_migrations (version) VALUES ('20140722225753');
 
 INSERT INTO schema_migrations (version) VALUES ('20140725003232');
+
+INSERT INTO schema_migrations (version) VALUES ('20141009011612');
 
