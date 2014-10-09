@@ -1,25 +1,32 @@
-class PixivUgoiraConverter
-  attr_reader :write_path, :format
+require "danbooru_image_resizer/danbooru_image_resizer"
 
-  def initialize(ugoira_file, frame_data, write_path, format)
-    @ugoira_file = ugoira_file
-    @frame_data = frame_data
+class PixivUgoiraConverter
+  attr_reader :width, :height, :write_path, :format
+
+  def initialize(source_path, write_path, frame_data, width, height, format)
+    @source_path = source_path
     @write_path = write_path
+    @frame_data = frame_data
+    @width = width
+    @height = height
     @format = format
   end
 
   def process!
-    folder = Zip::File.open_buffer(@ugoira_file)
-
-    if format == :gif
-      write_gif(folder)
-    elsif format == :webm
-      write_webm(folder)
-    elsif format == :apng
-      write_apng(folder)
+    Zip::File.open(@source_path) do |folder|
+      if format == :gif
+        write_gif(folder)
+      elsif format == :webm
+        write_webm(folder)
+      elsif format == :apng
+        write_apng(folder)
+      elsif format == :jpg
+        write_jpg(folder)
+      end
     end
   end
 
+  # TODO: support resizing to width x height.
   def write_gif(folder)
     anim = Magick::ImageList.new
     delay_sum = 0
@@ -41,12 +48,10 @@ class PixivUgoiraConverter
   def write_webm(folder)
     Dir.mktmpdir do |tmpdir|
       FileUtils.mkdir_p("#{tmpdir}/images")
-      folder.each_with_index do |file, i|
-        path = File.join(tmpdir, "images", file.name)
-        image_blob = file.get_input_stream.read
-        File.open(path, "wb") do |f|
-          f.write(image_blob)
-        end
+
+      folder.each do |entry|
+        path = File.join(tmpdir, 'images', entry.name)
+        entry.extract(path)
       end
 
       # Duplicate last frame to avoid it being displayed only for a very short amount of time.
@@ -55,6 +60,7 @@ class PixivUgoiraConverter
       new_last_index = $1.to_i + 1
       file_ext = $2
       new_last_filename = ("%06d" % new_last_index) + file_ext
+
       path_from = File.join(tmpdir, "images", last_file_name)
       path_to = File.join(tmpdir, "images", new_last_filename)
       FileUtils.cp(path_from, path_to)
@@ -72,11 +78,12 @@ class PixivUgoiraConverter
       end
 
       ext = folder.first.name.match(/\.(\w{,4})$/)[1]
-      system("ffmpeg -i #{tmpdir}/images/%06d.#{ext} -codec:v libvpx -crf 4 -b:v 5000k -an #{tmpdir}/tmp.webm")
+      system("ffmpeg -i #{tmpdir}/images/%06d.#{ext} -s #{width}x#{height} -codec:v libvpx -crf 4 -b:v 5000k -an #{tmpdir}/tmp.webm")
       system("mkvmerge -o #{write_path} --webm --timecodes 0:#{tmpdir}/timecodes.tc #{tmpdir}/tmp.webm")
     end
   end
 
+  # TODO: support resizing to width x height.
   def write_apng(folder)
     Dir.mktmpdir do |tmpdir|
       folder.each_with_index do |file, i|
@@ -92,6 +99,17 @@ class PixivUgoiraConverter
         end
       end
       system("apngasm -o -F #{write_path} #{tmpdir}/frame*.png")
+    end
+  end
+
+  def write_jpg(folder)
+    begin
+      image = Tempfile.new("ugoira")
+      folder.entries.first.extract(image.path)
+
+      Danbooru.resize(image.path, write_path, width, height)
+    ensure
+      image.close!
     end
   end
 end
