@@ -7,6 +7,8 @@ module Sources
 
   module Strategies
     class Pixiv < Base
+      attr_reader :ugoira
+
       def self.url_match?(url)
         url =~ /^https?:\/\/(?:\w+\.)?pixiv\.net/
       end
@@ -48,8 +50,13 @@ module Sources
           @tags = get_tags_from_page(page)
           @page_count = get_page_count_from_page(page)
 
-          is_manga   = @page_count > 1
-          @image_url = get_image_url_from_page(page, is_manga)
+          if is_ugoira?(page)
+            @ugoira    = get_ugoira_data_from_page(page)
+            @image_url = @ugoira["src"]
+          else
+            is_manga   = @page_count > 1
+            @image_url = get_image_url_from_page(page, is_manga)
+          end
         end
       end
 
@@ -227,6 +234,31 @@ module Sources
           $1.to_i
         else
           1
+        end
+      end
+
+      # Get the zip url and frame delay by parsing javascript contained in a <script> tag on the page.
+      # Not a neat solution, but I haven't found any other location that has the frame delays listed.
+      def get_ugoira_data_from_page(page)
+        begin
+          script = page.search("#wrapper > script:nth-child(2)").first
+
+          match = script.text.match(/;pixiv\.context\.ugokuIllustFullscreenData\s+=\s+(\{.+?\});(?:$|pixiv\.context)/)
+          json  = match[1]
+
+          JSON.parse(json)
+        rescue
+          raise Sources::Errors.new("Can't find javascript with frame data in page: #{normalized_url}")
+        end
+      end
+
+      def is_ugoira?(page)
+        begin
+          script = page.search("#wrapper > script:nth-child(2)").first
+
+          !!script.text.match(/;pixiv\.context\.ugokuIllustFullscreenData\s+=\s+(\{.+?\});(?:$|pixiv\.context)/)
+        rescue
+          raise Sources::Errors.new("Can't find javascript with frame data in page: #{normalized_url}")
         end
       end
 
