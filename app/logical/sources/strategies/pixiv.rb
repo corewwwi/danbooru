@@ -3,6 +3,8 @@
 require 'csv'
 
 module Sources
+  class Error < StandardError ; end
+
   module Strategies
     class Pixiv < Base
       def self.url_match?(url)
