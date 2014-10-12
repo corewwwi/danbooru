@@ -218,10 +218,39 @@ module Sources
         agent.get(spapi_url) do |response|
           metadata = CSV.parse(response.content.force_encoding("UTF-8")).first
 
-          if metadata.nil?
-            raise Sources::Error.new("Couldn't get Pixiv API metadata from #{spapi_url}.")
-          else
-            yield metadata
+          validate_spapi_metadata!(metadata)
+          yield metadata
+        end
+      end
+
+      def validate_spapi_metadata!(metadata)
+        if metadata.nil?
+          raise Sources::Error.new("Pixiv API returned empty response.")
+        elsif metadata.size != 31
+          raise Sources::Error.new("Pixiv API returned unexpected number of fields.")
+        end
+
+        illust_id  = metadata[0]
+        file_ext   = metadata[2]
+        page_count = metadata[19]
+        moniker    = metadata[24]
+        mobile_profile_image = metadata[30]
+
+        if file_ext !~ /jpg|gif|png/
+          raise Sources::Error.new("Pixiv API returned unexpected file extension '#{file_ext}' for pixiv ##{illust_id}.")
+        elsif moniker !~ /[a-z0-9_-]+/i
+          raise Sources::Error.new("Pixiv API returned invalid artist moniker '#{moniker}' for pixiv ##{illust_id}.")
+        elsif page_count.to_s !~ /[0-9]*/i
+          raise Sources::Error.new("Pixiv API returned invalid page count '#{page_count}' for pixiv ##{illust_id}.")
+        end
+
+        if mobile_profile_image
+          # http://i1.pixiv.net/img01/profile/ccz67420/mobile/5042957_80.jpg
+          profile_regex  = %r!i[12]\.pixiv\.net/img\d+/profile/([^/]+)/mobile/\d+_\d+\.jpg!i
+          mobile_moniker = mobile_profile_image.match(profile_regex)[1]
+
+          if mobile_moniker != moniker
+            raise Sources::Error.new("Pixiv API returned inconsistent artist moniker '#{moniker}' for pixiv ##{illust_id}.")
           end
         end
       end
