@@ -7,8 +7,12 @@ module Sources
 
   module Strategies
     class Pixiv < Base
+      WEB = "^(?:https?://)?www\\.pixiv\\.net"
+      I12 = "^(?:https?://)?i[12]\\.pixiv\\.net"
+      IMG = "^(?:https?://)?img[0-9]*\\.pixiv\\.net"
+
       def self.url_match?(url)
-        url =~ /^https?:\/\/(?:\w+\.)?pixiv\.net/
+        url =~ /#{WEB}|#{IMG}|#{I12}/i
       end
 
       def referer_url(template)
