@@ -246,7 +246,7 @@ module Downloads
         @file_size       = 41_171
       end
 
-      should "download the zip file instead of the HTML page" do
+      should_eventually "download the zip file instead of the HTML page" do
         VCR.use_cassette("rewrite-pixiv-ugoira-html-pages", :record => :once) do
           assert_rewritten(@zip_file, @medium_page)
         end
@@ -254,7 +254,7 @@ module Downloads
         assert_downloaded(@file_size, @medium_page, "download-pixiv-ugoira-medium-page")
       end
 
-      should "download the zip file instead of the thumbnail" do
+      should_eventually "download the zip file instead of the thumbnail" do
         VCR.use_cassette("rewrite-pixiv-ugoira-thumbnails", :record => :once) do
           assert_rewritten(@zip_file, @small_thumbnail)
         end
