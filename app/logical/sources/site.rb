@@ -23,15 +23,13 @@ module Sources
     end
 
     def normalize_for_artist_finder!
-      if available?
-        begin
-          return strategy.normalize_for_artist_finder!
-        rescue
-          return url
-        end
+      if available? && strategy.normalizable_for_artist_finder?
+        strategy.normalize_for_artist_finder!
       else
-        return url
+        url
       end
+    rescue
+      url
     end
 
     def translated_tags

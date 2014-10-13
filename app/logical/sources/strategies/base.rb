@@ -18,6 +18,10 @@ module Sources
         raise NotImplementedError
       end
 
+      def normalizable_for_artist_finder?
+        false
+      end
+
       def normalize_for_artist_finder!
         url
       end

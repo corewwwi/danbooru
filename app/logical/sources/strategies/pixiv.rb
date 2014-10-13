@@ -35,6 +35,10 @@ module Sources
         @pixiv_moniker
       end
 
+      def normalizable_for_artist_finder?
+        has_moniker? || sample_image? || full_image? || work_page?
+      end
+
       def normalize_for_artist_finder!
         if has_moniker?
           moniker = get_moniker_from_url
@@ -312,6 +316,48 @@ module Sources
         else
           raise Sources::Error.new("Couldn't get illust ID from URL: #{url}")
         end
+      end
+
+      def work_page?
+        return true if url =~ %r!#{WEB}/member_illust\.php\?mode=(?:medium|big|manga|manga_big)&illust_id=\d+!i
+        return true if url =~ %r!#{WEB}/i/\d+$!i
+        return false
+      end
+
+      def full_image?
+        # http://img18.pixiv.net/img/evazion/14901720.png?1234
+        return true if url =~ %r!#{IMG}/img/#{MONIKER}/\d+(?:_big_p\d+)?\.#{EXT}!i
+
+        # http://i2.pixiv.net/img18/img/evazion/14901720.png
+        # http://i1.pixiv.net/img07/img/pasirism/18557054_big_p1.png
+        return true if url =~ %r!#{I12}/img\d+/img/#{MONIKER}/\d+(?:_big_p\d+)?\.#{EXT}!i
+
+        # http://i1.pixiv.net/img-original/img/2014/10/02/13/51/23/46304396_p0.png
+        return true if url =~ %r!#{I12}/img-original/img/#{TIMESTAMP}/\d+_p\d+\.#{EXT}$!i
+
+        # http://i1.pixiv.net/img-zip-ugoira/img/2014/10/03/17/29/16/46323924_ugoira1920x1080.zip
+        return true if url =~ %r!#{I12}/img-zip-ugoira/img/#{TIMESTAMP}/\d+_ugoira\d+x\d+\.zip$!i
+
+        return false
+      end
+
+      def sample_image?
+        # http://img18.pixiv.net/img/evazion/14901720_m.png
+        return true if url =~ %r!#{IMG}/img/#{MONIKER}/\d+_(?:[sm]|p\d+)\.#{EXT}!i
+
+        # http://i2.pixiv.net/img18/img/evazion/14901720_m.png
+        # http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png
+        return true if url =~ %r!#{I12}/img\d+/img/#{MONIKER}/\d+_(?:[sm]|p\d+)\.#{EXT}!i
+
+        # http://i1.pixiv.net/c/600x600/img-master/img/2014/10/02/13/51/23/46304396_p0_master1200.jpg
+        # http://i2.pixiv.net/c/64x64/img-master/img/2014/10/09/12/59/50/46441917_square1200.jpg
+        return true if url =~ %r!#{I12}/c/\d+x\d+/img-master/img/#{TIMESTAMP}/\d+_\w+\.#{EXT}$!i
+
+        # http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_s.png
+        # http://i2.pixiv.net/img-inf/img/2010/11/30/08/54/06/14901765_64x64.jpg
+        return true if url =~ %r!#{I12}/img-inf/img/#{TIMESTAMP}/\d+_\w+\.#{EXT}!i
+
+        return false
       end
 
       def agent
