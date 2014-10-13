@@ -7,6 +7,10 @@ module Sources
 
   module Strategies
     class Pixiv < Base
+      MONIKER   = '(?:[a-zA-Z0-9_-]+)'
+      TIMESTAMP = '(?:[0-9]{4}/[0-9]{2}/[0-9]{2}/[0-9]{2}/[0-9]{2}/[0-9]{2})'
+      EXT = "(?:jpg|jpeg|png|gif)"
+
       WEB = "^(?:https?://)?www\\.pixiv\\.net"
       I12 = "^(?:https?://)?i[12]\\.pixiv\\.net"
       IMG = "^(?:https?://)?img[0-9]*\\.pixiv\\.net"
@@ -68,7 +72,7 @@ module Sources
       # http://i1.pixiv.net/c/600x600/img-master/img/2014/10/02/13/51/23/46304396_p1_master1200.jpg
       # => http://i1.pixiv.net/img-original/img/2014/10/02/13/51/23/46304396_p1.png
       def rewrite_new_medium_images(thumbnail_url)
-        if thumbnail_url =~ %r!/c/\d+x\d+/img-master/img/.*/\d+_p\d+_\w+\.jpg!i
+        if thumbnail_url =~ %r!/c/\d+x\d+/img-master/img/#{TIMESTAMP}/\d+_p\d+_\w+\.jpg!i
           thumbnail_url = thumbnail_url.sub(%r!/c/\d+x\d+/img-master/!i, '/img-original/')
           # => http://i1.pixiv.net/img-original/img/2014/10/02/13/51/23/46304396_p1_master1200.jpg
 
@@ -98,7 +102,7 @@ module Sources
       # => http://i2.pixiv.net/img18/img/evazion/14901720.png
       #
       def rewrite_old_small_and_medium_images(thumbnail_url, is_manga)
-        if thumbnail_url =~ %r!/img/[^/]+/\d+_[ms]\.(?:jpg|jpeg|png|gif)!i
+        if thumbnail_url =~ %r!/img/#{MONIKER}/\d+_[ms]\.#{EXT}!i
           if is_manga.nil?
             illust_id = illust_id_from_url(@url)
             get_metadata_from_spapi!(illust_id) do |metadata|
@@ -122,7 +126,7 @@ module Sources
         # http://i2.pixiv.net/img04/img/syounen_no_uta/46170939_p0.jpg
         # http://i1.pixiv.net/c/600x600/img-master/img/2014/09/24/23/25/08/46168376_p0_master1200.jpg
         # http://i1.pixiv.net/img-original/img/2014/09/25/23/09/29/46183440_p0.jpg
-        if url =~ %r!/\d+_p(\d+)(?:_\w+)?\.(?:jpg|jpeg|png|gif|zip)!i
+        if url =~ %r!/\d+_p(\d+)(?:_\w+)?\.#{EXT}!i
           $1
 
         # http://www.pixiv.net/member_illust.php?mode=manga_big&illust_id=46170939&page=0
@@ -240,9 +244,9 @@ module Sources
         moniker    = metadata[24]
         mobile_profile_image = metadata[30]
 
-        if file_ext !~ /jpg|gif|png/
+        if file_ext !~ /#{EXT}/i
           raise Sources::Error.new("Pixiv API returned unexpected file extension '#{file_ext}' for pixiv ##{illust_id}.")
-        elsif moniker !~ /[a-z0-9_-]+/i
+        elsif moniker !~ /#{MONIKER}/i
           raise Sources::Error.new("Pixiv API returned invalid artist moniker '#{moniker}' for pixiv ##{illust_id}.")
         elsif page_count.to_s !~ /[0-9]*/i
           raise Sources::Error.new("Pixiv API returned invalid page count '#{page_count}' for pixiv ##{illust_id}.")
@@ -250,7 +254,7 @@ module Sources
 
         if mobile_profile_image
           # http://i1.pixiv.net/img01/profile/ccz67420/mobile/5042957_80.jpg
-          profile_regex  = %r!i[12]\.pixiv\.net/img\d+/profile/([^/]+)/mobile/\d+_\d+\.jpg!i
+          profile_regex  = %r!i[12]\.pixiv\.net/img\d+/profile/#{MONIKER}/mobile/\d+_\d+\.jpg!i
           mobile_moniker = mobile_profile_image.match(profile_regex)[1]
 
           if mobile_moniker != moniker
