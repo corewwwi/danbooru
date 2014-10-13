@@ -36,17 +36,16 @@ module Sources
       end
 
       def normalize_for_artist_finder!
-        # http://i2.pixiv.net/img04/img/syounen_no_uta/46170939_m.jpg
-        if url =~ %r!/img/([^/]+)/\d+(?:_\w+)?\.(?:jpg|jpeg|png|gif)!i
-          username = $1
+        if has_moniker?
+          moniker = get_moniker_from_url
         else
           illust_id = illust_id_from_url(url)
           get_metadata_from_spapi!(illust_id) do |metadata|
-            username = metadata[24]
+            moniker = metadata[24]
           end
         end
 
-        "http://img.pixiv.net/img/#{username}"
+        "http://img.pixiv.net/img/#{moniker}/"
       end
 
       def get
@@ -161,6 +160,23 @@ module Sources
         else
           raise Sources::Error.new("Couldn't find Pixiv moniker in page: #{normalized_url}")
         end
+      end
+
+      def get_moniker_from_url
+        case url
+        when %r!#{IMG}/img/(#{MONIKER})!i
+          $1
+        when %r!#{I12}/img[0-9]+/img/(#{MONIKER})!i
+          $1
+        when %r!#{WEB}/stacc/(#{MONIKER})/?$!i
+          $1
+        else
+          false
+        end
+      end
+
+      def has_moniker?
+        get_moniker_from_url != false
       end
 
       def get_image_url_from_page(page, is_manga)
