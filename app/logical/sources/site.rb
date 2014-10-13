@@ -22,6 +22,10 @@ module Sources
       end
     end
 
+    def normalized_for_artist_finder?
+      available? && strategy.normalized_for_artist_finder?
+    end
+
     def normalize_for_artist_finder!
       if available? && strategy.normalizable_for_artist_finder?
         strategy.normalize_for_artist_finder!

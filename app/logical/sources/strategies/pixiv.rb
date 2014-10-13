@@ -35,6 +35,10 @@ module Sources
         @pixiv_moniker
       end
 
+      def normalized_for_artist_finder?
+        url =~ %r!http://img\.pixiv\.net/img/#{MONIKER}/?$!i
+      end
+
       def normalizable_for_artist_finder?
         has_moniker? || sample_image? || full_image? || work_page?
       end
