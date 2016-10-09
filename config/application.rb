@@ -13,7 +13,6 @@ module Danbooru
     config.filter_parameters += [:password]
     config.assets.enabled = true
     config.assets.version = '1.0'
-    config.autoload_paths += %W(#{config.root}/app/presenters #{config.root}/app/logical #{config.root}/app/mailers)
     config.plugins = [:all]
     config.time_zone = 'Eastern Time (US & Canada)'
     config.action_mailer.delivery_method = :smtp
