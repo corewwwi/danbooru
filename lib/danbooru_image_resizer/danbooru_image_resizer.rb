@@ -38,12 +38,10 @@ module Danbooru
       end
       list << image
       flattened_image = list.flatten_images
-      list.each do |image|
-        image.destroy!
-      end
-      return flattened_image
+      list.each(&:destroy!)
+      flattened_image
     else
-      return image
+      image
     end
   end
 
