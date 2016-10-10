@@ -49,8 +49,6 @@ module Sources
         @artist_commentary_title = @data.artist_commentary_title
         @artist_commentary_desc = @data.artist_commentary_desc
 
-        is_manga = @page_count > 1
-
         if !@zip_url
           @image_url = @data.pages.first
         end
