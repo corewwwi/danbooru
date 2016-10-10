@@ -118,7 +118,7 @@ class ArtistsController < ApplicationController
       if @artists.empty? && params[:referer_url].present? && params[:referer_url] != params[:url]
         @artists = Artist.url_matches(params[:referer_url]).order("id desc").limit(20)
       end
-    rescue PixivApiClient::Error => e
+    rescue PixivApiClient::Error
       @artists = []
     end
 
