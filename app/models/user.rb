@@ -1,5 +1,4 @@
 require 'digest/sha1'
-require 'danbooru/has_bit_flags'
 
 class User < ActiveRecord::Base
   class Error < Exception ; end
