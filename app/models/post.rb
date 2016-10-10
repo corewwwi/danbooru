@@ -206,7 +206,7 @@ class Post < ActiveRecord::Base
     end
 
     def has_ugoira_webm?
-      created_at < 1.minute.ago || (File.exists?(preview_file_path) && File.size(preview_file_path) > 0)
+      created_at < 1.minute.ago || (File.exist?(preview_file_path) && File.size(preview_file_path) > 0)
     end
   end
 
@@ -1660,7 +1660,7 @@ class Post < ActiveRecord::Base
     end
 
     def update_iqdb_async
-      if Danbooru.config.iqdb_hostname_and_port && File.exists?(preview_file_path)
+      if Danbooru.config.iqdb_hostname_and_port && File.exist?(preview_file_path)
         Danbooru.config.all_server_hosts.each do |host|
           if has_tag?("ugoira")
             run_at = 10.seconds.from_now
@@ -1674,7 +1674,7 @@ class Post < ActiveRecord::Base
     end
 
     def remove_iqdb_async
-      if Danbooru.config.iqdb_hostname_and_port && File.exists?(preview_file_path)
+      if Danbooru.config.iqdb_hostname_and_port && File.exist?(preview_file_path)
         Danbooru.config.all_server_hosts.each do |host|
           Post.delay(:queue => host).remove_iqdb(id)
         end

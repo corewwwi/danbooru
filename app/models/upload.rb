@@ -52,7 +52,7 @@ class Upload < ActiveRecord::Base
     end
 
     def validate_file_exists
-      unless file_path && File.exists?(file_path)
+      unless file_path && File.exist?(file_path)
         raise "file does not exist"
       end
     end
@@ -198,7 +198,7 @@ class Upload < ActiveRecord::Base
     end
 
     def move_file
-      return if File.exists?(md5_file_path)
+      return if File.exist?(md5_file_path)
       FileUtils.mv(file_path, md5_file_path)
     end
 
@@ -249,7 +249,7 @@ class Upload < ActiveRecord::Base
     end
 
     def generate_resize_for(width, height, source_path, quality = 90)
-      unless File.exists?(source_path)
+      unless File.exist?(source_path)
         raise Error.new("file not found")
       end
 
