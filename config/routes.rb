@@ -432,5 +432,5 @@ Rails.application.routes.draw do
 
   root :to => "posts#index"
 
-  get "*other", :to => "static#not_found"
+  # get "*other", :to => "static#not_found"
 end
