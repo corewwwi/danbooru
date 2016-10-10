@@ -5,7 +5,7 @@ class PostReadOnly < Post
   def with_timeout(n, default_value = nil)
     connection.execute("SET STATEMENT_TIMEOUT = #{n}") unless Rails.env == "test"
     yield
-  rescue ::ActiveRecord::StatementInvalid => x
+  rescue ::ActiveRecord::StatementInvalid
     return default_value
   ensure
     connection.execute("SET STATEMENT_TIMEOUT = 0") unless Rails.env == "test"
