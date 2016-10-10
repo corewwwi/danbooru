@@ -2,25 +2,12 @@ source 'https://rubygems.org/'
 
 gem 'dotenv-rails', :require => "dotenv/rails-now"
 
-group :test do
-  gem "shoulda-context"
-  gem "shoulda-matchers"
-  gem "factory_girl"
-  gem "mocha", :require => "mocha/setup"
-  gem "ffaker"
-  gem "simplecov", :require => false
-  gem "timecop"
-  gem "fakeweb"
-end
-
 gem 'protected_attributes'
 gem "sass-rails", "~> 4.0.0"
 gem "sprockets-rails", :require => "sprockets/railtie"
 gem "uglifier"
 gem 'coffee-rails'
 gem "therubyracer", :platforms => :ruby
-gem "pry", :group => [:test, :development]
-gem "byebug", :group => [:test, :development]
 gem "rails", "~> 4.2.0"
 gem "pg"
 gem "kgio", :platforms => :ruby
@@ -76,6 +63,23 @@ group :production do
 end
 
 group :development do
+  gem 'meta_request'
+end
+
+group :development, :test do
+  gem 'pry-byebug'
+  gem 'pry-rails'
+  gem 'pry-inline'
   gem 'ruby-prof'
-  # gem 'sql-logging'
+end
+
+group :test do
+  gem "shoulda-context"
+  gem "shoulda-matchers"
+  gem "factory_girl"
+  gem "mocha", :require => "mocha/setup"
+  gem "ffaker"
+  gem "simplecov", :require => false
+  gem "timecop"
+  gem "fakeweb"
 end
