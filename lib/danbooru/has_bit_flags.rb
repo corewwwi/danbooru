@@ -21,9 +21,7 @@ module Danbooru
             send(field) & bit_flag > 0
           end
 
-          define_method("#{attribute}?") do
-            send(field) & bit_flag > 0
-          end
+          alias_method "#{attribute}?", attribute
 
           define_method("#{attribute}=") do |val|
             if val.to_s =~ /t|1|y/
