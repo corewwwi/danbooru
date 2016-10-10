@@ -153,9 +153,6 @@ protected
     when "sessions", "users", "maintenance/user/login_reminders", "maintenance/user/password_resets", "admin/users", "tag_subscriptions"
       /^\/(session|users)/
 
-    when "forum_posts"
-      /^\/forum_topics/
-
     when "comments"
       /^\/comments/
 
