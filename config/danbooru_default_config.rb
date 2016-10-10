@@ -243,11 +243,7 @@ module Danbooru
     end
 
     def can_user_see_post?(user, post)
-     if is_user_restricted?(user) && is_post_restricted?(post)
-        false
-      else
-        true
-      end
+     !is_user_restricted?(user) && !is_post_restricted?(post)
     end
 
     def select_posts_visible_to_user(user, posts)
