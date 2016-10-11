@@ -103,7 +103,6 @@ class PostVersion < ActiveRecord::Base
   end
 
   def undo
-    changes = diff(previous)
     added = changes[:added_tags] - changes[:obsolete_added_tags]
     removed = changes[:removed_tags] - changes[:obsolete_removed_tags]
 
