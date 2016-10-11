@@ -4,16 +4,12 @@ class PostVersion < ActiveRecord::Base
   before_validation :initialize_updater
 
   module SearchMethods
-    def updater_name(name)
-      where("updater_id = (select _.id from users _ where lower(_.name) = ?)", name.mb_chars.downcase)
-    end
-
     def search(params)
       q = where("true")
       params = {} if params.blank?
 
       if params[:updater_name].present?
-        q = q.updater_name(params[:updater_name])
+        params[:updater_id] = User.name_to_id(params[:updater_name])
       end
 
       if params[:updater_id].present?
