@@ -4,10 +4,6 @@ class PostVersion < ActiveRecord::Base
   before_validation :initialize_updater
 
   module SearchMethods
-    def for_user(user_id)
-      where("updater_id = ?", user_id)
-    end
-
     def updater_name(name)
       where("updater_id = (select _.id from users _ where lower(_.name) = ?)", name.mb_chars.downcase)
     end
@@ -38,14 +34,6 @@ class PostVersion < ActiveRecord::Base
 
   extend SearchMethods
 
-  def self.create_from_post(post)
-    if post.created_at == post.updated_at
-      create_from_created_post(post)
-    else
-      create_from_updated_post(post)
-    end
-  end
-
   def initialize_updater
     self.updater_id = CurrentUser.id
     self.updater_ip_addr = CurrentUser.ip_addr
@@ -57,17 +45,6 @@ class PostVersion < ActiveRecord::Base
 
   def presenter
     PostVersionPresenter.new(self)
-  end
-
-  def sequence_for_post
-    versions = PostVersion.where(:post_id => post_id).order("updated_at desc, id desc")
-    diffs = []
-    versions.each_index do |i|
-      if i < versions.size - 1
-        diffs << versions[i].diff(versions[i + 1])
-      end
-    end
-    return diffs
   end
 
   def diff(version)
@@ -131,10 +108,6 @@ class PostVersion < ActiveRecord::Base
     else
       PostVersion.where("post_id = ? and updated_at < ?", post_id, updated_at).order("updated_at desc, id desc").first
     end
-  end
-
-  def truncated_source
-    source.gsub(/^http:\/\//, "").sub(/\/.+/, "")
   end
 
   def undo

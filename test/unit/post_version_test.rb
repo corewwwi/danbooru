@@ -34,12 +34,6 @@ class PostVersionTest < ActiveSupport::TestCase
           assert_not_nil(@version.previous)
           assert_equal("1 2", @version.previous.tags)
         end
-
-        should "know the seuqence of all versions for the post" do
-          assert_equal(2, @version.sequence_for_post.size)
-          assert_equal(%w(3), @version.sequence_for_post[0][:added_tags])
-          assert_equal(%w(2), @version.sequence_for_post[1][:added_tags])
-        end
       end
     end
 
