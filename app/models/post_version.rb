@@ -53,7 +53,7 @@ class PostVersion < ActiveRecord::Base
   end
 
   def tag_array
-    tags.scan(/\S+/)
+    Tag.scan_tags(tags)
   end
 
   def presenter
