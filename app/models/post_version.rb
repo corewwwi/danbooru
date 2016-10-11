@@ -53,16 +53,11 @@ class PostVersion < ActiveRecord::Base
   end
 
   def tag_array
-    @tag_array ||= tags.scan(/\S+/)
+    tags.scan(/\S+/)
   end
 
   def presenter
     PostVersionPresenter.new(self)
-  end
-
-  def reload
-    @tag_array = nil
-    super
   end
 
   def sequence_for_post
