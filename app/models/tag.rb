@@ -131,11 +131,7 @@ class Tag < ActiveRecord::Base
 
     def update_category_post_counts
       Post.with_timeout(30_000, nil, {:tags => name}) do
-        Post.raw_tag_match(name).where("true /* Tag#update_category_post_counts */").find_each do |post|
-          post.reload
-          post.set_tag_counts
-          Post.where(:id => post.id).update_all(:tag_count => post.tag_count, :tag_count_general => post.tag_count_general, :tag_count_artist => post.tag_count_artist, :tag_count_copyright => post.tag_count_copyright, :tag_count_character => post.tag_count_character)
-        end
+        Post.raw_tag_match(name).where("true /* Tag#update_category_post_counts */").find_each(&:set_tag_counts!)
       end
     end
 

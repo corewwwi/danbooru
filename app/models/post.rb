@@ -558,6 +558,17 @@ class Post < ActiveRecord::Base
       end
     end
 
+    def set_tag_counts!
+      set_tag_counts
+      touch(
+        :tag_count => tag_count,
+        :tag_count_general => tag_count_general,
+        :tag_count_artist => tag_count_artist,
+        :tag_count_copyright => tag_count_copyright,
+        :tag_count_character => tag_count_character
+      )
+    end
+
     def merge_old_changes
       if old_tag_string
         # If someone else committed changes to this post before we did,
@@ -1039,17 +1050,6 @@ class Post < ActiveRecord::Base
   end
 
   module CountMethods
-    def fix_post_counts
-      post.set_tag_counts
-      post.update_columns(
-        :tag_count => post.tag_count,
-        :tag_count_general => post.tag_count_general,
-        :tag_count_artist => post.tag_count_artist,
-        :tag_count_copyright => post.tag_count_copyright,
-        :tag_count_character => post.tag_count_character
-      )
-    end
-
     def get_count_from_cache(tags)
       count = Cache.get(count_cache_key(tags))
 
