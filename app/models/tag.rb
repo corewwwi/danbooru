@@ -5,6 +5,8 @@ class Tag < ActiveRecord::Base
   attr_accessible :category, :as => [:moderator, :janitor, :gold, :member, :anonymous, :default, :builder, :admin]
   attr_accessible :is_locked, :as => [:moderator, :admin]
   has_one :wiki_page, :foreign_key => "title", :primary_key => "name"
+  has_one :aliased_to, :class_name => "TagAlias", :foreign_key => :antecedent_name, :primary_key => :name, :inverse_of => :antecedent
+  has_many :aliased_from, :class_name => "TagAlias", :foreign_key => :consequent_name, :primary_key => :name, :inverse_of => :consequent
 
   module ApiMethods
     def to_legacy_json
