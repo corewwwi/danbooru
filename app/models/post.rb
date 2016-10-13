@@ -610,7 +610,7 @@ class Post < ActiveRecord::Base
     def normalize_tags
       normalized_tags = Tag.scan_tags(tag_string)
       normalized_tags = filter_metatags(normalized_tags)
-      normalized_tags = normalized_tags.map{|tag| tag.downcase}
+      normalized_tags = normalized_tags.map{|tag| tag.downcase} # XXX should happen elsewhere. Tag.scan_tags? Tag.find_or_create_by_name?
       normalized_tags = remove_negated_tags(normalized_tags)
       normalized_tags = normalized_tags.map {|x| Tag.find_or_create_by_name(x).name}
       normalized_tags = %w(tagme) if normalized_tags.empty?

@@ -180,6 +180,8 @@ class Tag < ActiveRecord::Base
   end
 
   module NameMethods
+    # XXX should forbid \u3000, [%,], and metatags. Possibly tag type prefixes too.
+    # also leading/trailing underscores and consecutive underscores.
     def normalize_name(name)
       name.mb_chars.downcase.tr(" ", "_").gsub(/\A[-~]+/, "").gsub(/\*/, "").to_s
     end
