@@ -212,11 +212,7 @@ class Tag < ActiveRecord::Base
 
         tag
       else
-        Tag.new.tap do |t|
-          t.name = name
-          t.category = categories.value_for(category)
-          t.save
-        end
+        Tag.create(name: name, category: categories.value_for(category))
       end
     end
   end
