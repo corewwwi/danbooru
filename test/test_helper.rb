@@ -138,3 +138,5 @@ VCR.configure do |c|
     ]
   }
 end
+
+Delayed::Worker.delay_jobs = false

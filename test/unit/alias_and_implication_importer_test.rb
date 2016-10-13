@@ -12,6 +12,7 @@ class AliasAndImplicationImporterTest < ActiveSupport::TestCase
     teardown do
       CurrentUser.user = nil
       CurrentUser.ip_addr = nil
+      Delayed::Worker.delay_jobs = false
     end
 
     context "given a valid list" do

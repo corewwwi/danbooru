@@ -37,7 +37,6 @@ module Downloads
 
     context "An ugoira site for pixiv" do
       setup do
-        Delayed::Worker.delay_jobs = false
         @tempfile = Tempfile.new("danbooru-test")
         @download = Downloads::File.new("http://www.pixiv.net/member_illust.php?mode=medium&illust_id=46378654", @tempfile.path)
         VCR.use_cassette("downloads-pixiv-test/ugoira-converter", :record => @vcr_record_option) do
