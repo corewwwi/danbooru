@@ -20,12 +20,16 @@ class TagAlias < ActiveRecord::Base
   belongs_to :creator, :class_name => "User"
   belongs_to :approver, :class_name => "User"
   belongs_to :forum_topic
+  belongs_to :antecedent, :class_name => "Tag", :foreign_key => :antecedent_name, :primary_key => :name, :inverse_of => :aliased_to
+  belongs_to :consequent, :class_name => "Tag", :foreign_key => :consequent_name, :primary_key => :name, :inverse_of => :aliased_from
   attr_accessible :antecedent_name, :consequent_name, :forum_topic_id, :skip_secondary_validations
   attr_accessible :status, :as => [:admin]
 
   module SearchMethods
     def name_matches(name)
-      where("(antecedent_name like ? escape E'\\\\' or consequent_name like ? escape E'\\\\')", name.mb_chars.downcase.to_escaped_for_sql_like, name.downcase.to_escaped_for_sql_like)
+      # XXX use Tag.normalize_name
+      name = name.mb_chars.downcase.to_escaped_for_sql_like
+      where("(antecedent_name like ? escape E'\\\\' or consequent_name like ? escape E'\\\\')", name, name)
     end
     
     def active
@@ -45,9 +49,13 @@ class TagAlias < ActiveRecord::Base
       end
 
       if params[:id].present?
+        # XXX refactor to use advanced integer parsing
         q = q.where("id in (?)", params[:id].split(",").map(&:to_i))
       end
 
+      # XXX add filter by status
+
+      # XXX add order by post count, order by names.
       case params[:order]
       when "created_at"
         q = q.order("created_at desc")
@@ -61,11 +69,13 @@ class TagAlias < ActiveRecord::Base
     extend ActiveSupport::Concern
 
     module ClassMethods
+      # XXX sanitize inside Cache.delete.
       def clear_cache_for(name)
         Cache.delete("ta:#{Cache.sanitize(name)}")
       end
     end
 
+    # XXX Have Cache.delete clear the other servers.
     def clear_all_cache
       TagAlias.clear_cache_for(antecedent_name)
       TagAlias.clear_cache_for(consequent_name)
@@ -83,7 +93,9 @@ class TagAlias < ActiveRecord::Base
   def self.to_aliased(names)
     Array(names).flatten.map do |name|
       Cache.get("ta:#{Cache.sanitize(name)}") do
-        ActiveRecord::Base.select_value_sql("select consequent_name from tag_aliases where status in ('active', 'processing') and antecedent_name = ?", name) || name.to_s
+        # XXX
+        TagAlias.active.where(antecedent_name: name).pluck("consequent_name").first || name.to_s
+        # ActiveRecord::Base.select_value_sql("select consequent_name from tag_aliases where status in ('active', 'processing') and antecedent_name = ?", name) || name.to_s
       end
     end.uniq
   end
@@ -133,10 +145,12 @@ class TagAlias < ActiveRecord::Base
     status == "pending"
   end
 
+  # XXX dead code?
   def is_active?
     status == "active"
   end
   
+  # XXX should use Tag.normalize_name (which ought to normalize [,%] too).
   def normalize_names
     self.antecedent_name = antecedent_name.mb_chars.downcase.tr(" ", "_")
     self.consequent_name = consequent_name.downcase.tr(" ", "_")
@@ -160,18 +174,16 @@ class TagAlias < ActiveRecord::Base
     # If the a -> b alias was created first, the new one will be allowed and the old one will be moved automatically instead.
     if self.class.active.exists?(["antecedent_name = ?", consequent_name])
       self.errors[:base] << "A tag alias for #{consequent_name} already exists"
-      false
     end
   end
 
   def antecedent_and_consequent_are_different
-    normalize_names
     if antecedent_name == consequent_name
       self.errors[:base] << "Cannot alias a tag to itself"
-      false
     end
   end
 
+  # XXX escape for sql like, parse tag queries correctly
   def move_saved_searches
     escaped = Regexp.escape(antecedent_name)
     SavedSearch.where("tag_query like ?", "%#{antecedent_name}%").find_each do |ss|
@@ -219,19 +231,16 @@ class TagAlias < ActiveRecord::Base
       consequent_tag.update_attribute(:category, antecedent_tag.category)
       consequent_tag.update_category_cache_for_all
     end
-
-    true
   end
 
   def update_posts
     Post.without_timeout do
       Post.raw_tag_match(antecedent_name).find_each do |post|
+        # XXX check escaping, parsing
         escaped_antecedent_name = Regexp.escape(antecedent_name)
         fixed_tags = post.tag_string.sub(/(?:\A| )#{escaped_antecedent_name}(?:\Z| )/, " #{consequent_name} ").strip
         CurrentUser.scoped(creator, creator_ip_addr) do
-          post.update_attributes(
-            :tag_string => fixed_tags
-          )
+          post.update_attributes(:tag_string => fixed_tags)
         end
       end
 
@@ -323,7 +332,6 @@ class TagAlias < ActiveRecord::Base
 
     unless WikiPage.titled(consequent_name).exists?
       self.errors[:base] = "The #{consequent_name} tag needs a corresponding wiki page"
-      return false
     end
   end
 
