@@ -3,7 +3,7 @@ require "test_helper"
 class PixivUgoiraConverterTest < ActiveSupport::TestCase
   context "An ugoira converter" do
     setup do
-      @zipped_body = "#{Rails.root}/test/fixtures/ugoira.zip"
+      @zipped_body = "#{Rails.root}/test/files/ugoira.zip"
       @write_file = Tempfile.new("converted")
       @preview_write_file = Tempfile.new("preview")
       @frame_data = [
