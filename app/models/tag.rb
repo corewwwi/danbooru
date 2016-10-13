@@ -184,7 +184,7 @@ class Tag < ActiveRecord::Base
       name.mb_chars.downcase.tr(" ", "_").gsub(/\A[-~]+/, "").gsub(/\*/, "").to_s
     end
 
-    def find_or_create_by_name(name, options = {})
+    def find_or_create_by_name(name)
       name = normalize_name(name)
       category = nil
 
