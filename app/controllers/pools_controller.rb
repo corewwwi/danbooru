@@ -1,5 +1,5 @@
 class PoolsController < ApplicationController
-  respond_to :html, :xml, :json, :js
+  respond_to :html, :xml, :json
   before_filter :member_only, :except => [:index, :show, :gallery]
   before_filter :moderator_only, :only => [:destroy]
 
@@ -52,7 +52,7 @@ class PoolsController < ApplicationController
     unless @pool.errors.any?
       flash[:notice] = "Pool updated"
     end
-    respond_with(@pool)
+    respond_with(@pool) { |format| format.js }
   end
 
   def destroy
@@ -63,7 +63,7 @@ class PoolsController < ApplicationController
     @pool.update_attribute(:is_deleted, true)
     @pool.create_mod_action_for_delete
     flash[:notice] = "Pool deleted"
-    respond_with(@pool)
+    respond_with(@pool) { |format| format.js }
   end
 
   def undelete
@@ -82,8 +82,6 @@ class PoolsController < ApplicationController
     @version = @pool.versions.find(params[:version_id])
     @pool.revert_to!(@version)
     flash[:notice] = "Pool reverted"
-    respond_with(@pool) do |format|
-      format.js
-    end
+    respond_with(@pool) { |format| format.js }
   end
 end

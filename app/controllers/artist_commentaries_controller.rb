@@ -1,5 +1,5 @@
 class ArtistCommentariesController < ApplicationController
-  respond_to :html, :xml, :json, :js
+  respond_to :html, :xml, :json
   before_filter :member_only, :except => [:index]
 
   def index
@@ -20,13 +20,13 @@ class ArtistCommentariesController < ApplicationController
       @artist_commentary = ArtistCommentary.create(params[:artist_commentary])
     end
 
-    respond_with(@artist_commentary)
+    respond_with(@artist_commentary) { |format| format.js }
   end
 
   def revert
     @artist_commentary = ArtistCommentary.find_by_post_id!(params[:id])
     @version = @artist_commentary.versions.find(params[:version_id])
     @artist_commentary.revert_to!(@version)
-    respond_with(@artist_commentary)
+    respond_with(@artist_commentary) { |format| format.js }
   end
 end

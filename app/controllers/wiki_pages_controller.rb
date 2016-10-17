@@ -1,5 +1,5 @@
 class WikiPagesController < ApplicationController
-  respond_to :html, :xml, :json, :js
+  respond_to :html, :xml, :json
   before_filter :member_only, :except => [:index, :show, :show_or_new]
   before_filter :builder_only, :only => [:destroy]
   before_filter :normalize_search_params, :only => [:index]
@@ -62,7 +62,7 @@ class WikiPagesController < ApplicationController
   def destroy
     @wiki_page = WikiPage.find(params[:id])
     @wiki_page.update_attribute(:is_deleted, true)
-    respond_with(@wiki_page)
+    respond_with(@wiki_page) { |format| format.js }
   end
 
   def revert

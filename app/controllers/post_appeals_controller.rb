@@ -1,6 +1,6 @@
 class PostAppealsController < ApplicationController
   before_filter :member_only, :except => [:index, :show]
-  respond_to :html, :xml, :json, :js
+  respond_to :html, :xml, :json
 
   def new
     @post_appeal = PostAppeal.new
@@ -19,7 +19,7 @@ class PostAppealsController < ApplicationController
 
   def create
     @post_appeal = PostAppeal.create(params[:post_appeal])
-    respond_with(@post_appeal)
+    respond_with(@post_appeal) { |format| format.js }
   end
 
   def show
