@@ -1,5 +1,6 @@
 class FavoriteGroupsController < ApplicationController
   before_filter :member_only, :except => [:index, :show]
+  # XXX
   respond_to :html, :xml, :json, :js
 
   def index
@@ -53,6 +54,7 @@ class FavoriteGroupsController < ApplicationController
     @favorite_group.destroy
     flash[:notice] = "Favorite group deleted"
     redirect_to favorite_groups_path
+    # XXX
   end
 
   def add_post
@@ -60,6 +62,7 @@ class FavoriteGroupsController < ApplicationController
     check_privilege(@favorite_group)
     @post = Post.find(params[:post_id])
     @favorite_group.add!(@post)
+    # XXX
   end
 
 private

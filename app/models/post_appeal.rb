@@ -1,6 +1,8 @@
 class PostAppeal < ActiveRecord::Base
   class Error < Exception ; end
 
+  # XXX validate is not flagged.
+  # XXX validate post id
   belongs_to :creator, :class_name => "User"
   belongs_to :post
   validates_presence_of :reason, :creator_id, :creator_ip_addr
@@ -79,22 +81,17 @@ class PostAppeal < ActiveRecord::Base
   def validate_creator_is_not_limited
     if appeal_count_for_creator >= Danbooru.config.max_appeals_per_day
       errors[:creator] << "can appeal at most #{Danbooru.config.max_appeals_per_day} post a day"
-      false
-    else
-      true
     end
   end
 
   def validate_post_is_inactive
-    if !post.is_deleted? && !post.is_flagged?
+    if !post.is_deleted?
       errors[:post] << "is active"
-      false
-    else
-      true
     end
   end
 
   def initialize_creator
+    # XXX
     self.creator_id = CurrentUser.id
     self.creator_ip_addr = CurrentUser.ip_addr
   end
@@ -103,6 +100,7 @@ class PostAppeal < ActiveRecord::Base
     PostAppeal.for_user(creator_id).recent.count
   end
 
+  # XXX method attributes
   def serializable_hash(options = {})
     options ||= {}
     options[:except] ||= []

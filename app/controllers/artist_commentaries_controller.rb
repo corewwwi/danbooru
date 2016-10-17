@@ -7,6 +7,7 @@ class ArtistCommentariesController < ApplicationController
     respond_with(@commentaries)
   end
 
+  # XXX should be POST /artist_commentaries.json (create) and PUT /artist_commentaries/1.json (update)
   def create_or_update
     @artist_commentary = ArtistCommentary.find_by_post_id(params[:artist_commentary][:post_id])
 

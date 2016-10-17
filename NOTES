@@ -1,0 +1,75 @@
+Validation:
+
+* Validate that URLs in artist entries actually are valid URLs.
+** Validate that if an URL is for e.g. twitter.com, it follows the expected format for twitter URLs.
+
+* Twitter:
+** Handle sources for http://t.co and http://pic.twitter.com
+
+* Handle deep parent/child loops:
+** A's parent is B, B's parent is C, C's parent is D, D's parent is A again.
+
+Code cleanup:
+
+* Rename before_filter to before_action (deprecated in Rails 5.0, removed in 5.1)
+* move requires into config/initializers/lib.rb.
+* move lib/* to app/logical and remove from initializers/lib.rb.
+* make it possible to move ~/.danbooru.
+* refactor logical/anonymous_user.rb
+
+Dead code:
+* Pool::create_anonymous
+* Post.validate_parent_does_not_have_a_parent
+* Post.last_noted_at_as_integer
+* {PostSets::Base,ActiveRecord}#arbitrary_order_sql_clause, dead since d4f2ec
+* Stripe support.
+* Advertisements
+* dead routes: jobs.
+
+* post ratings have no validation, may not be {r,q,s}
+
+Tag name validation:
+
+* Tags aren't normalized and validated with Tag.normalize_name throughout the app.
+* Tags aren't parsed with Tag.scan_tags throughout
+* Tag.normalize_name permits tags like "_foo" and "_bar" and "foo__bar"
+** also doesn't downcase tags, that only happen in Tag::normalize_tags
+
+Docs:
+
+* Set QUERY_TRACE=1 for logging of where SQL queries originated.
+
+API:
+
+* return IP addrs if user has permission.
+* add include param (for assocations) and except param (exclude fields) and only param (only given fields)
+* return limit in header
+* return page count in header
+* POST/PUT/PATCH accepts JSON: curl -H 'Content-Type: application/json' -d '{ "posts": { "rating": "e" } }' $URL
+* add API limits for writes.
+* API is throttled on IPs when it should be on usernames
+* API is not throttled for HTML format responses.
+
+DB:
+
+* Import data using Post.from_json.
+
+* Reverting to a foreign artist version was already prevented (by accident) because you can't have two artists with the same name. Ditto for pools and wiki pages.
+
+* Reverting an artist doesn't revert is_banned even when user has permission to set is_banned.
+* Reverting an artist reverts is_active even when user doesn't have permission to set is_active.
+* Revert for artist commentaries takes the post id, not the artcomm id. This is inconsistent with all other revert actions.
+* No errors when reverting a pool or post for accounts less than a week old.
+* Missing templates for JSON responses.
+
+Delayed jobs:
+
+* convert to active job
+
+Memcache:
+
+* factor mockmemcache out of test_helper.rb
+* have initializer that tests for memcache and falls back to mockmemcache on failure.
+* have cache.delete flush cache from all servers.
+* write redis backend.
+* grep for MEMCACHE and replace with calls to Cache.

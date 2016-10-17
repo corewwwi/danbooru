@@ -3,7 +3,9 @@ class ArtistCommentary < ActiveRecord::Base
 
   attr_accessor :remove_commentary_tag, :remove_commentary_request_tag, :remove_commentary_check_tag
   attr_accessor :add_commentary_tag, :add_commentary_request_tag, :add_commentary_check_tag
+  # XXX post_id shouldn't be accessible in update
   attr_accessible :post_id, :original_description, :original_title, :translated_description, :translated_title, :remove_commentary_tag, :remove_commentary_request_tag, :add_commentary_tag, :add_commentary_request_tag, :add_commentary_check_tag, :remove_commentary_check_tag
+  # XXX should validate post exists
   validates_uniqueness_of :post_id
   belongs_to :post
   has_many :versions, lambda {order("artist_commentary_versions.id ASC")}, :class_name => "ArtistCommentaryVersion", :dependent => :destroy, :foreign_key => :post_id, :primary_key => :post_id
@@ -67,6 +69,7 @@ class ArtistCommentary < ActiveRecord::Base
     original_present? || translated_present?
   end
 
+  # XXX should merge if < 1.hour
   def create_version
     versions.create(
       :post_id => post_id,
@@ -82,6 +85,7 @@ class ArtistCommentary < ActiveRecord::Base
       raise RevertError.new("You cannot revert to a previous artist commentary of another post.")
     end
 
+    # XXX should use assign attribute
     self.original_description = version.original_description
     self.original_title = version.original_title
     self.translated_description = version.translated_description

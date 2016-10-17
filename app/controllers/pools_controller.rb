@@ -22,6 +22,7 @@ class PoolsController < ApplicationController
     limit = params[:limit] || CurrentUser.user.per_page
     @pools = Pool.series.search(params[:search]).order("updated_at desc").paginate(params[:page], :limit => limit, :search_count => params[:search])
     @post_set = PostSets::PoolGallery.new(@pools)
+    # XXX respond_with(@pools)
   end
 
   def search
@@ -35,6 +36,7 @@ class PoolsController < ApplicationController
 
   def create
     @pool = Pool.create(params[:pool])
+    # XXX
     flash[:notice] = "Pool created"
     respond_with(@pool)
   end
@@ -45,6 +47,7 @@ class PoolsController < ApplicationController
     @pool.attributes = params[:pool]
     @pool.synchronize
     @pool.save
+    # XXX
     unless @pool.errors.any?
       flash[:notice] = "Pool updated"
     end
@@ -70,7 +73,7 @@ class PoolsController < ApplicationController
     @pool.update_attribute(:is_deleted, false)
     @pool.create_mod_action_for_undelete
     flash[:notice] = "Pool undeleted"
-    respond_with(@pool)
+    respond_with(@pool) { |format| format.js }
   end
 
   def revert

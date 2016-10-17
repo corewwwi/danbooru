@@ -1,6 +1,7 @@
 class PostFlag < ActiveRecord::Base
   class Error < Exception ; end
 
+  # XXX validate presence of post
   belongs_to :creator, :class_name => "User"
   belongs_to :post
   validates_presence_of :reason, :creator_id, :creator_ip_addr

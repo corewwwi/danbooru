@@ -14,6 +14,7 @@ class PostFlagsController < ApplicationController
   end
 
   def create
+    # XXX exploit: set is_deletion=true to flag multiple times.
     @post_flag = PostFlag.create(params[:post_flag].merge(:is_resolved => false))
     respond_with(@post_flag) { |format| format.js }
   end

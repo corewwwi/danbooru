@@ -14,6 +14,7 @@ class FavoritesController < ApplicationController
       end
 
       @favorite_set = PostSets::Favorite.new(user_id, params[:page], params)
+      # XXX
       respond_with(@favorite_set.posts) do |format|
         format.xml do
           render :xml => @favorite_set.posts.to_xml(:root => "posts")
@@ -35,6 +36,7 @@ class FavoritesController < ApplicationController
         redirect_to(mobile_post_path(@post))
       end
       format.js
+      # XXX
       format.json do
         if @post
           render :json => {:success => true}.to_json
@@ -54,6 +56,7 @@ class FavoritesController < ApplicationController
         redirect_to(mobile_post_path(@post))
       end
       format.js
+      # XXX
       format.json do
         render :json => {:success => true}.to_json
       end

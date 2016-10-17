@@ -2,6 +2,7 @@ class NotePreviewsController < ApplicationController
   respond_to :json
 
   def show
+    # XXX
     @body = DText.sanitize(params[:body].to_s)
     respond_with(@body) do |format|
       format.json do

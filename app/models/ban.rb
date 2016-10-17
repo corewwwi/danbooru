@@ -1,14 +1,20 @@
 class Ban < ActiveRecord::Base
+  # XXX reason should be nonblank
+  # XXX duration should be positive
+  # XXX user_id/user_name should be valid
+  attr_accessible :reason, :duration, :user_id, :user_name
+  belongs_to :user
+  belongs_to :banner, :class_name => "User"
+
+  after_initialize :initialize_banner_id, :on => :create
   after_create :update_feedback
   after_create :update_user_on_create
   after_create :create_mod_action
   after_destroy :update_user_on_destroy
-  belongs_to :user
-  belongs_to :banner, :class_name => "User"
-  attr_accessible :reason, :duration, :user_id, :user_name
+
   validate :user_is_inferior
-  validates_presence_of :user_id, :reason, :duration
-  before_validation :initialize_banner_id, :on => :create
+  validates_presence_of :user, :banner, :reason
+  validates_presence_of :duration, unless: lambda { expires_at.present? }
 
   def self.is_banned?(user)
     exists?(["user_id = ? AND expires_at > ?", user.id, Time.now])

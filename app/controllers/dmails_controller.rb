@@ -41,6 +41,7 @@ class DmailsController < ApplicationController
     check_privilege(@dmail)
     @dmail.mark_as_read!
     @dmail.destroy
+    # XXX
     redirect_to dmails_path, :notice => "Message destroyed"
   end
 

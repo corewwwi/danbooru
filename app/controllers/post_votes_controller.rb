@@ -1,6 +1,7 @@
 class PostVotesController < ApplicationController
   before_filter :voter_only
 
+  # XXX
   def create
     @post = Post.find(params[:post_id])
     @post.vote!(params[:score])
@@ -8,6 +9,7 @@ class PostVotesController < ApplicationController
     @error = x
   end
 
+  # XXX
   def destroy
     @post = Post.find(params[:post_id])
     @post.unvote!

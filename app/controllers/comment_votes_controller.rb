@@ -8,6 +8,7 @@ class CommentVotesController < ApplicationController
     respond_with(@comment_vote)
   end
 
+  # XXX
   def destroy
     @comment = Comment.find(params[:comment_id])
     @comment.unvote!(params[:score])

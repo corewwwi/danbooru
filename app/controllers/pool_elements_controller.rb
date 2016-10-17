@@ -12,6 +12,8 @@ class PoolElementsController < ApplicationController
     else
       @error = "That pool does not exist"
     end
+
+    # XXX respond_with(@pool)
   end
 
   def destroy

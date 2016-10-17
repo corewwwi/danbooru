@@ -40,6 +40,7 @@ class JanitorTrialsController < ApplicationController
   end
 
   def test
+    # XXX
     @tester = JanitorTrialTester.new(params[:janitor_trial][:user_name])
   end
 end

@@ -48,6 +48,7 @@ class CommentsController < ApplicationController
 
   def show
     @comment = Comment.find(params[:id])
+    # XXX
     respond_with(@comment) do |format|
       format.json {render :json => @comment.to_json(:methods => [:creator_name])}
     end
@@ -71,6 +72,7 @@ class CommentsController < ApplicationController
     end
   end
 
+  # XXX
   def unvote
     @comment = Comment.find(params[:id])
     @comment.unvote!

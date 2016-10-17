@@ -1,4 +1,5 @@
 class NotesController < ApplicationController
+  # XXX
   respond_to :html, :xml, :json, :js
   before_filter :member_only, :except => [:index, :show]
   before_filter :pass_html_id, :only => [:create]

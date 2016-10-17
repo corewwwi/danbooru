@@ -6,11 +6,7 @@ class SourcesController < ApplicationController
     @source = Sources::Site.new(params[:url], :referer_url => params[:ref])
     @source.get
 
-    respond_with(@source) do |format|
-      format.json do
-        render :json => @source.to_json
-      end
-    end
+    respond_with(@source.to_json)
   end
 
 private

@@ -4,6 +4,7 @@ class UserFeedback < ActiveRecord::Base
   belongs_to :creator, :class_name => "User"
   before_validation :initialize_creator, :on => :create
   attr_accessor :disable_dmail_notification
+  # XXX mass assignment to user_id
   attr_accessible :body, :user_id, :category, :user_name, :disable_dmail_notification
   validates_presence_of :user, :creator, :body, :category
   validates_inclusion_of :category, :in => %w(positive negative neutral)
