@@ -7,11 +7,7 @@ class SavedSearchesController < ApplicationController
     @categories = @saved_searches.group_by{|saved_search| saved_search.category.to_s}
     @categories = @categories.sort_by{|category, saved_searches| category.to_s}
 
-    respond_with(@saved_searches) do |format|
-      format.xml do
-        render :xml => @saved_searches.to_xml(:root => "saved-searches")
-      end
-    end
+    respond_with(@saved_searches)
   end
 
   def categories

@@ -91,9 +91,6 @@ private
     @posts.each # hack to force rails to eager load
     respond_with(@posts) do |format|
       format.html {render :action => "index_by_post"}
-      format.xml do
-        render :xml => @posts.to_xml(:root => "posts")
-      end
     end
   end
 
@@ -101,9 +98,6 @@ private
     @comments = Comment.search(params[:search]).order("comments.id DESC").paginate(params[:page], :limit => params[:limit], :search_count => params[:search])
     respond_with(@comments) do |format|
       format.html {render :action => "index_by_comment"}
-      format.xml do
-        render :xml => @comments.to_xml(:root => "comments")
-      end
     end
   end
 

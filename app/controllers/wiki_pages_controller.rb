@@ -28,9 +28,6 @@ class WikiPagesController < ApplicationController
           end
         end
       end
-      format.xml do
-        render :xml => @wiki_pages.to_xml(:root => "wiki-pages")
-      end
     end
   end
 

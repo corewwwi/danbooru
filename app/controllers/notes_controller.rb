@@ -79,9 +79,6 @@ private
     @posts = @post_set.posts
     respond_with(@posts) do |format|
       format.html {render :action => "index_by_post"}
-      format.xml do
-        render :xml => @posts.to_xml(:root => "posts")
-      end
     end
   end
 
@@ -89,9 +86,6 @@ private
     @notes = Note.search(params[:search]).order("id desc").paginate(params[:page], :limit => params[:limit], :search_count => params[:search])
     respond_with(@notes) do |format|
       format.html {render :action => "index_by_note"}
-      format.xml do
-        render :xml => @notes.to_xml(:root => "notes")
-      end
     end
   end
 end

@@ -10,11 +10,7 @@ class PostFlagsController < ApplicationController
   def index
     @query = PostFlag.order("id desc").search(params[:search])
     @post_flags = @query.paginate(params[:page], :limit => params[:limit])
-    respond_with(@post_flags) do |format|
-      format.xml do
-        render :xml => @post_flags.to_xml(:root => "post-flags")
-      end
-    end
+    respond_with(@post_flags)
   end
 
   def create

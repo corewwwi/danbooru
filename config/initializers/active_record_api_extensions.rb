@@ -32,6 +32,17 @@ class Delayed::Job
   end
 end
 
+class ActiveRecord::Relation
+  # Normally @wiki_pages.to_xml returns `<nil-classes type="array"/>` if
+  # @wiki_pages is empty. We don't want that. This makes the root element
+  # default to the table name (e.g. wiki-page-versions) instead.
+  def to_xml(options = {}, &block)
+    options[:root] ||= self.table_name.tableize.dasherize
+
+    super(options, &block)
+  end
+end
+
 class ActiveRecord::Base
   include Danbooru::Extensions::ActiveRecordApi
 end

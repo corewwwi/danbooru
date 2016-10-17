@@ -23,11 +23,7 @@ class UsersController < ApplicationController
       end
     else
       @users = User.search(params[:search]).order("users.id desc").paginate(params[:page], :limit => params[:limit], :search_count => params[:search])
-      respond_with(@users) do |format|
-        format.xml do
-          render :xml => @users.to_xml(:root => "users")
-        end
-      end
+      respond_with(@users)
     end
   end
 
