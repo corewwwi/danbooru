@@ -82,7 +82,7 @@ private
   def index_for_post
     @post = Post.find(params[:post_id])
     @comments = @post.comments
-    @comments = @comments.visible(CurrentUser.user) unless params[:include_below_threshold]
+    @comments = @comments.above_threshold(CurrentUser.user) unless params[:include_below_threshold]
     render :action => "index_for_post"
   end
 

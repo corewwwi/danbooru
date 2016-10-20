@@ -5,7 +5,7 @@
     <div class="comments-for-post">
       <div class="list-of-comments">
         <% @comments.each do |comment| %>
-          <% if CurrentUser.is_moderator? || !comment.is_deleted? %>
+          <% if comment.visible? %>
             <div id="post_<%= comment.post.id %>" class="post <%= PostPresenter.preview_class(comment.post) %>" <%= PostPresenter.data_attributes(comment.post) %>>
               <div class="preview">
                 <% if comment.post.visible? %>

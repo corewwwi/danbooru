@@ -33,11 +33,11 @@ class Comment < ActiveRecord::Base
       end
     end
 
-    def hidden(user)
+    def below_threshold(user)
       where("score < ?", user.comment_threshold)
     end
 
-    def visible(user)
+    def above_threshold(user)
       where("score >= ?", user.comment_threshold)
     end
 
@@ -193,6 +193,10 @@ class Comment < ActiveRecord::Base
 
   def editable_by?(user)
     creator_id == user.id || user.is_moderator?
+  end
+
+  def visible?
+    !is_deleted? || editable_by?(CurrentUser)
   end
 
   def hidden_attributes
