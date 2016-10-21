@@ -643,6 +643,21 @@ class PostTest < ActiveSupport::TestCase
             assert_nil(@post.parent_id)
           end
 
+          should "not allow 1-deep parent cycles" do
+            @parent.update(:parent_id => @post.id)
+            @post.update(:tag_string => "parent:#{@parent.id}")
+            assert_nil(@post.parent_id)
+          end
+
+          should "not allow 2-deep parent cycles" do
+            @p3 = FactoryGirl.create(:post)
+            @p2 = FactoryGirl.create(:post, :parent_id => @p3.id)
+            @p1 = FactoryGirl.create(:post, :parent_id => @p2.id)
+
+            @p3.update(:tag_string => "parent:#{@p1.id}")
+            assert_nil(@p3.parent_id)
+          end
+
           should "clear the parent with parent:none" do
             @post.update(:parent_id => @parent.id)
             assert_equal(@parent.id, @post.parent_id)
