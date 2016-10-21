@@ -497,11 +497,11 @@ class Post < ActiveRecord::Base
 
   module TagMethods
     def tag_array
-      @tag_array ||= Tag.scan_tags(tag_string)
+      Tag.scan_tags(tag_string)
     end
 
     def tag_array_was
-      @tag_array_was ||= Tag.scan_tags(tag_string_was)
+      Tag.scan_tags(tag_string_was)
     end
 
     def increment_tag_post_counts
@@ -597,14 +597,8 @@ class Post < ActiveRecord::Base
       end
     end
 
-    def reset_tag_array_cache
-      @tag_array = nil
-      @tag_array_was = nil
-    end
-
     def set_tag_string(string)
       self.tag_string = string
-      reset_tag_array_cache
     end
 
     def normalize_tags
@@ -1651,7 +1645,6 @@ class Post < ActiveRecord::Base
 
   def reload(options = nil)
     super
-    reset_tag_array_cache
     @pools = nil
     @favorite_groups = nil
     @tag_categories = nil
