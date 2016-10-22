@@ -9,6 +9,7 @@ class Post < ActiveRecord::Base
 
   before_validation :initialize_uploader, :on => :create
   before_validation :merge_old_changes
+  before_validation :validate_tags
   before_validation :normalize_tags
   before_validation :strip_source
   before_validation :parse_pixiv_id
@@ -610,6 +611,28 @@ class Post < ActiveRecord::Base
       normalized_tags = TagImplication.with_descendants(normalized_tags)
       normalized_tags.sort!
       set_tag_string(normalized_tags.uniq.sort.join(" "))
+    end
+
+    def validate_tags
+      tags = Tag.scan_tags(tag_string)
+
+      if tags.grep(/\Achild:(.+)\Z/i).size > 1
+        errors.add(:tag_string, "can not contain more than one child: tag")
+      end
+
+      if tags.grep(/\A-?fav:(.+)\Z/i).size > 1
+        errors.add(:tag_string, "can not contain more than one fav: tag")
+      end
+
+      if tags.grep(/\A-?pool:(.+)\Z/i).size > 3
+        errors.add(:tag_string, "can not contain more than three pool: tags")
+      end
+
+      if tags.grep(/\Anewpool:(.+)\Z/i).size > 1
+        errors.add(:tag_string, "can not contain more than one newpool: tag")
+      end
+
+      return false if errors[:tag_string].any?
     end
 
     def remove_negated_tags(tags)
