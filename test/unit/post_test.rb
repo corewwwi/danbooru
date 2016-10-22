@@ -839,6 +839,50 @@ class PostTest < ActiveSupport::TestCase
             end
           end
         end
+
+        context "of" do
+          setup do
+            @gold = FactoryGirl.build(:gold_user)
+          end
+
+          context "upvote:self or downvote:self" do
+            context "by a member" do
+              should "not upvote the post" do
+                assert_raises PostVote::Error do
+                  @post.update(:tag_string => "upvote:self")
+                end
+
+                assert_equal(0, @post.score)
+              end
+
+              should "not downvote the post" do
+                assert_raises PostVote::Error do
+                  @post.update(:tag_string => "downvote:self")
+                end
+
+                assert_equal(0, @post.score)
+              end
+            end
+
+            context "by a gold user" do
+              should "upvote the post" do
+                CurrentUser.scoped(FactoryGirl.create(:gold_user)) do
+                  @post.update(:tag_string => "tag1 tag2 upvote:self")
+                  assert_equal(false, @post.errors.any?)
+                  assert_equal(1, @post.score)
+                end
+              end
+
+              should "downvote the post" do
+                CurrentUser.scoped(FactoryGirl.create(:gold_user)) do
+                  @post.update(:tag_string => "tag1 tag2 downvote:self")
+                  assert_equal(false, @post.errors.any?)
+                  assert_equal(-1, @post.score)
+                end
+              end
+            end
+          end
+        end
       end
 
       context "tagged with a negated tag" do
