@@ -304,7 +304,17 @@ class Post < ActiveRecord::Base
       end
     end
 
-    def approve!
+    def approve
+      if !CurrentUser.is_approver?
+        errors.add(:approver, "does not have approval permissions")
+        raise ApprovalError.new("You do not have permission to approve posts")
+      end
+
+      if status == "active"
+        errors.add(:base, "Post is already active and cannot be reapproved")
+        raise ApprovalError.new("Post is already active and cannot be reapproved")
+      end
+
       if is_status_locked?
         errors.add(:is_status_locked, "; post cannot be approved")
         raise ApprovalError.new("Post is locked and cannot be approved")
@@ -325,6 +335,10 @@ class Post < ActiveRecord::Base
       self.is_pending = false
       self.is_deleted = false
       self.approver_id = CurrentUser.id
+    end
+
+    def approve!
+      approve
       save!
     end
 
@@ -702,7 +716,7 @@ class Post < ActiveRecord::Base
 
     def filter_metatags(tags)
       @pre_metatags, tags = tags.partition {|x| x =~ /\A(?:rating|parent|-parent|source):/i}
-      @post_metatags, tags = tags.partition {|x| x =~ /\A(?:-pool|pool|newpool|fav|-fav|child|-favgroup|favgroup):/i}
+      @post_metatags, tags = tags.partition {|x| x =~ /\A(?:-pool|pool|newpool|approver|fav|-fav|child|-favgroup|favgroup):/i}
       apply_pre_metatags
       return tags
     end
@@ -734,6 +748,9 @@ class Post < ActiveRecord::Base
             pool = Pool.create(:name => $1, :description => "This pool was automatically generated")
           end
           add_pool!(pool) if pool
+
+        when /^approver:(.+)$/i
+          approve
 
         when /^fav:(.+)$/i
           add_favorite!(CurrentUser.user)
