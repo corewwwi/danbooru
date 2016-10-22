@@ -129,17 +129,15 @@ private
   def respond_with_post_after_update(post)
     respond_with(post) do |format|
       format.html do
-        if post.errors.any?
-          @error_message = post.errors.full_messages.join("; ")
-          render :template => "static/error", :status => 500
-        else
-          response_params = {:tags => params[:tags_query], :pool_id => params[:pool_id], :favgroup_id => params[:favgroup_id]}
-          response_params.reject!{|key, value| value.blank?}
-          redirect_to post_path(post, response_params)
-        end
+        flash[:notice] = post.errors.full_messages.join("; ") if post.errors.any?
+
+        response_params = {:tags => params[:tags_query], :pool_id => params[:pool_id], :favgroup_id => params[:favgroup_id]}
+        response_params.reject!{|key, value| value.blank?}
+        redirect_to post_path(post, response_params)
       end
 
       format.json do
+        raise post.errors.full_messages.join("; ") if post.invalid?
         render :json => post.to_json
       end
     end
