@@ -584,6 +584,16 @@ class PostTest < ActiveSupport::TestCase
             end
           end
 
+          should "not allow adding post to more than three pools" do
+            @post = FactoryGirl.create(:post)
+
+            pool_tags = 4.times.map { "pool:#{FactoryGirl.create(:pool).id}" }
+            @post.update(:tag_string => pool_tags.join(" "))
+
+            assert_equal(["Tag string can not contain more than three pool: tags"], @post.errors.full_messages)
+            assert_equal(0, @post.pools.size)
+          end
+
           context "negated" do
             setup do
               @pool = FactoryGirl.create(:pool)
@@ -639,6 +649,16 @@ class PostTest < ActiveSupport::TestCase
                 assert_equal("#{@post.id}", @pool.post_ids)
                 assert_equal("pool:#{@pool.id} pool:series", @post.pool_string)
               end
+
+              should "not allow creating more than one new pool" do
+                @post.update(:tag_string => "newpool:foo newpool:bar")
+
+                assert(@post.invalid?)
+                assert_equal(["Tag string can not contain more than one newpool: tag"], @post.errors.full_messages)
+                assert_equal(0, @post.pools.size)
+                assert_not(Pool.exists?(name: "foo"))
+                assert_not(Pool.exists?(name: "bar"))
+              end
             end
           end
         end
@@ -688,6 +708,14 @@ class PostTest < ActiveSupport::TestCase
             @post.update_attributes(:tag_string => "aaa -fav:self")
             assert_equal("", @post.fav_string)
           end
+
+          should "not allow using more than once" do
+            @post.update(:tag_string => "fav:me fav:self fav:evazion fav:true")
+            assert_equal(["Tag string can not contain more than one fav: tag"], @post.errors.full_messages)
+
+            @post.reload.update(:tag_string => "-fav:me -fav:self -fav:evazion -fav:true")
+            assert_equal(["Tag string can not contain more than one fav: tag"], @post.errors.full_messages)
+          end
         end
 
         context "for a child" do
@@ -701,6 +729,17 @@ class PostTest < ActiveSupport::TestCase
             @child.reload
             assert_equal(@post.id, @child.parent_id)
             assert(@post.has_children?)
+          end
+
+          should "not allow adding more than one child" do
+            c1 = FactoryGirl.create(:post)
+            c2 = FactoryGirl.create(:post)
+
+            @post.update(:tag_string => "child:#{c1.id} child:#{c2.id}")
+
+            assert_equal(["Tag string can not contain more than one child: tag"], @post.errors.full_messages)
+            assert_nil(c1.parent)
+            assert_nil(c2.parent)
           end
         end
 
