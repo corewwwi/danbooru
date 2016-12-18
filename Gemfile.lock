@@ -381,6 +381,7 @@ PLATFORMS
   x64-mingw32
 
 DEPENDENCIES
+  addressable
   awesome_print
   aws-sdk (~> 2)
   bcrypt-ruby

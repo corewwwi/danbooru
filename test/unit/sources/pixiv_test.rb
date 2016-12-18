@@ -116,6 +116,16 @@ module Sources
         end
       end
 
+      context "A member_illust.php?illust_id=...&mode=medium page" do
+        setup do
+          get_source("http://www.pixiv.net/member_illust.php?illust_id=46785915&mode=medium")
+        end
+
+        should "get the full size image url" do
+          assert_equal("https://i.pximg.net/img-original/img/2014/10/29/09/27/19/46785915_p0.jpg", @site.image_url)
+        end
+      end
+
       context "fetching the commentary" do
         setup do
           get_source("https://www.pixiv.net/member_illust.php?mode=medium&illust_id=46337015")

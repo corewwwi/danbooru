@@ -46,7 +46,7 @@ module Sources
       end
 
       def normalizable_for_artist_finder?
-        has_moniker? || sample_image? || full_image? || work_page?
+        illust_id_from_url != nil
       end
 
       def normalize_for_artist_finder!
@@ -107,17 +107,11 @@ module Sources
         @metadata.pages
       end
 
-      def illust_id_from_url
-        if sample_image? || full_image? || work_page?
-          illust_id_from_url!
-        else
-          nil
-        end
-      rescue Sources::Error
-        nil
+      def illust_id_from_url!
+        illust_id_from_url or raise Sources::Error.new("Couldn't get illust ID from URL: #{url}")
       end
 
-      def illust_id_from_url!
+      def illust_id_from_url
         # http://img18.pixiv.net/img/evazion/14901720.png
         #
         # http://i2.pixiv.net/img18/img/evazion/14901720.png
@@ -148,7 +142,7 @@ module Sources
           $1
 
         else
-          raise Sources::Error.new("Couldn't get illust ID from URL: #{url}")
+          nil
         end
       end
 
@@ -230,23 +224,6 @@ module Sources
         end
       end
 
-      def get_moniker_from_url
-        case url
-        when %r!#{IMG}/img/(#{MONIKER})!i
-          $1
-        when %r!#{I12}/img[0-9]+/img/(#{MONIKER})!i
-          $1
-        when %r!#{WEB}/stacc/(#{MONIKER})/?$!i
-          $1
-        else
-          false
-        end
-      end
-
-      def has_moniker?
-        get_moniker_from_url != false
-      end
-
       def get_image_url_from_page(page, is_manga)
         if is_manga
           elements = page.search("div.works_display a img").find_all do |node|
@@ -301,57 +278,6 @@ module Sources
 
       def get_metadata_from_papi(illust_id)
         @metadata ||= PixivApiClient.new.works(illust_id)
-      end
-
-      def work_page?
-        return true if url =~ %r!(?:#{WEB}|#{TOUCH})/member_illust\.php\?mode=(?:medium|big|manga|manga_big)&illust_id=\d+!i
-        return true if url =~ %r!(?:#{WEB}|#{TOUCH})/i/\d+$!i
-        return false
-      end
-
-      def full_image?
-        # http://img18.pixiv.net/img/evazion/14901720.png?1234
-        return true if url =~ %r!#{IMG}/img/#{MONIKER}/\d+(?:_big_p\d+)?\.#{EXT}!i
-
-        # http://i2.pixiv.net/img18/img/evazion/14901720.png
-        # http://i1.pixiv.net/img07/img/pasirism/18557054_big_p1.png
-        return true if url =~ %r!#{I12}/img\d+/img/#{MONIKER}/\d+(?:_big_p\d+)?\.#{EXT}!i
-
-        # http://i1.pixiv.net/img-original/img/2014/10/02/13/51/23/46304396_p0.png
-        return true if url =~ %r!#{I12}/img-original/img/#{TIMESTAMP}/\d+_p\d+\.#{EXT}$!i
-
-        # http://i.pximg.net/img-original/img/2017/03/22/17/40/51/62041488_p0.jpg
-        return true if url =~ %r!#{PXIMG}/img-original/img/#{TIMESTAMP}/\d+_\w+\.#{EXT}!i
-
-        # http://i1.pixiv.net/img-zip-ugoira/img/2014/10/03/17/29/16/46323924_ugoira1920x1080.zip
-        return true if url =~ %r!#{I12}/img-zip-ugoira/img/#{TIMESTAMP}/\d+_ugoira\d+x\d+\.zip$!i
-
-        return false
-      end
-
-      def sample_image?
-        # http://img18.pixiv.net/img/evazion/14901720_m.png
-        return true if url =~ %r!#{IMG}/img/#{MONIKER}/\d+_(?:[sm]|p\d+)\.#{EXT}!i
-
-        # http://i2.pixiv.net/img18/img/evazion/14901720_m.png
-        # http://i1.pixiv.net/img07/img/pasirism/18557054_p1.png
-        return true if url =~ %r!#{I12}/img\d+/img/#{MONIKER}/\d+_(?:[sm]|p\d+)\.#{EXT}!i
-
-        # http://i1.pixiv.net/c/600x600/img-master/img/2014/10/02/13/51/23/46304396_p0_master1200.jpg
-        # http://i2.pixiv.net/c/64x64/img-master/img/2014/10/09/12/59/50/46441917_square1200.jpg
-        return true if url =~ %r!#{I12}/c/\d+x\d+/img-master/img/#{TIMESTAMP}/\d+_\w+\.#{EXT}$!i
-
-        # http://i.pximg.net/img-master/img/2014/05/15/23/53/59/43521009_p1_master1200.jpg
-        return true if url =~ %r!#{PXIMG}/img-master/img/#{TIMESTAMP}/\d+_\w+\.#{EXT}!i
-
-        # http://i.pximg.net/c/600x600/img-master/img/2017/03/22/17/40/51/62041488_p0_master1200.jpg
-        return true if url =~ %r!#{PXIMG}/c/\d+x\d+/img-master/img/#{TIMESTAMP}/\d+_\w+\.#{EXT}!i
-
-        # http://i1.pixiv.net/img-inf/img/2011/05/01/23/28/04/18557054_s.png
-        # http://i2.pixiv.net/img-inf/img/2010/11/30/08/54/06/14901765_64x64.jpg
-        return true if url =~ %r!#{I12}/img-inf/img/#{TIMESTAMP}/\d+_\w+\.#{EXT}!i
-
-        return false
       end
     end
   end
