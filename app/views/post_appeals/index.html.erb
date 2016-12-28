@@ -15,7 +15,7 @@
       </thead>
       <tbody>
         <% @post_appeals.each do |post_appeal| %>
-          <tr>
+          <tr class="resolved-<%= post_appeal.is_resolved %>">
             <td><%= PostPresenter.preview(post_appeal.post, :tags => "status:any") %></td>
             <td><%= link_to_user post_appeal.creator %></td>
             <td><%= format_text post_appeal.reason, :ragel => true %></td>

@@ -2,4 +2,8 @@ div#c-post-appeals {
   li {
     list-style-type: disc;
   }
+
+  tr.resolved-true:not(:hover) {
+    background: #EFE;
+  }
 }

@@ -3,11 +3,7 @@ div#c-post-flags {
     list-style-type: disc;
   }
 
-  tr.resolved-true {
-    background: #DDD !important;
-  }
-
-  tr.resolved-false {
-    background: #FFF !important;
+  tr.resolved-true:not(:hover) {
+    background: #EFE;
   }
 }
