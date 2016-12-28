@@ -2,11 +2,6 @@ class PostFlagsController < ApplicationController
   before_filter :member_only, :except => [:index, :show]
   respond_to :html, :xml, :json, :js
 
-  def new
-    @post_flag = PostFlag.new
-    respond_with(@post_flag)
-  end
-
   def index
     @query = PostFlag.order("id desc").search(params[:search])
     @post_flags = @query.paginate(params[:page], :limit => params[:limit])

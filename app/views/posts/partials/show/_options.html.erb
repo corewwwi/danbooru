@@ -22,11 +22,11 @@
     <li><span id="status-locked-notice">Status locked</span></li>
   <% else %>
     <% if !post.is_deleted? && !post.is_pending? %>
-      <li><%= link_to "Flag", new_post_flag_path(:post_id => post.id), :id => "flag" %></li>
+      <li><%= link_to "Flag", "#", :id => "flag" %></li>
     <% end %>
 
     <% if post.is_flagged? || post.is_deleted? %>
-      <li><%= link_to "Appeal", new_post_appeal_path(:post_id => post.id), :id => "appeal" %></li>
+      <li><%= link_to "Appeal", "#", :id => "appeal" %></li>
     <% end %>
 
     <% if CurrentUser.can_approve_posts? %>
