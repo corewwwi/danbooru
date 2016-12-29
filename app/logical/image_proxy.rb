@@ -4,6 +4,7 @@ class ImageProxy
   end
 
   def self.fake_referer_for(url)
+    return "https://danbooru.donmai.us" if url =~ %r!^https://danbooru.donmai.us!
     Sources::Site.new(url).strategy.try(:fake_referer)
   end
 
