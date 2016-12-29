@@ -110,19 +110,23 @@ class Post < ActiveRecord::Base
     end
 
     def file_url
-       if Danbooru.config.use_s3_proxy?(self)
+      if Danbooru.config.use_s3_proxy?(self)
          "/cached/data/#{seo_tag_string}#{file_path_prefix}#{md5}.#{file_ext}"
-       else
-         "/data/#{seo_tag_string}#{file_path_prefix}#{md5}.#{file_ext}"
-       end
+      elsif File.exist?(file_path)
+        "/data/#{file_name}"
+      else
+        "http://danbooru.donmai.us.rsz.io/data/#{md5}.#{file_ext}"
+      end
     end
 
     def large_file_url
       if has_large?
         if Danbooru.config.use_s3_proxy?(self)
           "/cached/data/sample/#{seo_tag_string}#{file_path_prefix}#{Danbooru.config.large_image_prefix}#{md5}.#{large_file_ext}"
+        elsif File.exist?(file_path)
+          "/data/sample/#{file_path_prefix}#{Danbooru.config.large_image_prefix}#{md5}.#{large_file_ext}"
         else
-          "/data/sample/#{seo_tag_string}#{file_path_prefix}#{Danbooru.config.large_image_prefix}#{md5}.#{large_file_ext}"
+          "http://danbooru.donmai.us.rsz.io/data/sample/#{Danbooru.config.large_image_prefix}#{md5}.#{large_file_ext}"
         end
       else
         file_url
@@ -146,11 +150,15 @@ class Post < ActiveRecord::Base
         return "/images/download-preview.png"
       end
 
-      "/data/preview/#{file_path_prefix}#{md5}.jpg"
+      if File.exist?(preview_file_path)
+        "/data/preview/#{file_path_prefix}#{md5}.jpg"
+      else
+        "http://danbooru.donmai.us.rsz.io/data/preview/#{file_path_prefix}#{md5}.jpg"
+      end
     end
 
     def complete_preview_file_url
-      "http://#{Danbooru.config.hostname}#{preview_file_url}"
+      preview_file_url
     end
 
     def file_url_for(user)
