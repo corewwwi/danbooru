@@ -31,7 +31,7 @@ class PostsController < ApplicationController
     @post_flag = PostFlag.new(:post_id => @post.id)
     @post_appeal = PostAppeal.new(:post_id => @post.id)
     
-    include_deleted = @post.is_deleted? || (@post.parent_id.present? && @post.parent.is_deleted?) || CurrentUser.user.show_deleted_children?
+    include_deleted = @post.is_deleted? || (@post.parent.present? && @post.parent.is_deleted?) || CurrentUser.user.show_deleted_children?
     @parent_post_set = PostSets::PostRelationship.new(@post.parent_id, :include_deleted => include_deleted)
     @children_post_set = PostSets::PostRelationship.new(@post.id, :include_deleted => include_deleted)
     respond_with(@post)
