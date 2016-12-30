@@ -57,7 +57,7 @@ class Post < ActiveRecord::Base
   attr_accessible :source, :rating, :tag_string, :old_tag_string, :old_parent_id, :old_source, :old_rating, :parent_id, :has_embedded_notes, :as => [:member, :builder, :gold, :platinum, :janitor, :moderator, :admin, :default]
   attr_accessible :is_rating_locked, :is_note_locked, :as => [:builder, :janitor, :moderator, :admin]
   attr_accessible :is_status_locked, :as => [:admin]
-  attr_accessor :old_tag_string, :old_parent_id, :old_source, :old_rating, :has_constraints, :disable_versioning, :view_count
+  attr_accessor :old_tag_string, :old_parent_id, :old_source, :old_rating, :disable_versioning, :view_count
 
   module FileMethods
     def distribute_files

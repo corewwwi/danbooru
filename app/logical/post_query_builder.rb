@@ -1,23 +1,12 @@
 class PostQueryBuilder
-  attr_accessor :query_string, :has_constraints
+  attr_accessor :query_string
 
   def initialize(query_string)
     @query_string = query_string
-    @has_constraint = false
-  end
-
-  def has_constraints?
-    @has_constraints
-  end
-
-  def has_constraints!
-    @has_constraints = true
   end
 
   def add_range_relation(arr, field, relation)
     return relation if arr.nil?
-
-    has_constraints!
 
     case arr[0]
     when :eq
@@ -61,12 +50,10 @@ class PostQueryBuilder
 
     if tags[:include].any?
       tag_query_sql << "(" + escape_string_for_tsquery(tags[:include]).join(" | ") + ")"
-      has_constraints!
     end
 
     if tags[:related].any?
       tag_query_sql << "(" + escape_string_for_tsquery(tags[:related]).join(" & ") + ")"
-      has_constraints!
     end
 
     if tags[:exclude].any?
@@ -154,7 +141,6 @@ class PostQueryBuilder
 
     if q[:md5]
       relation = relation.where(["posts.md5 IN (?)", q[:md5]])
-      has_constraints!
     end
 
     if q[:status] == "pending"
@@ -201,10 +187,8 @@ class PostQueryBuilder
         relation = relation.where("(lower(posts.source) like ?)", "http%")
       elsif q[:source] =~ /^(?:https?:\/\/)?%\.?pixiv(?:\.net(?:\/img)?)?(?:%\/img\/|%\/|(?=%$))(.+)$/i
         relation = relation.where("SourcePattern(lower(posts.source)) LIKE lower(?) ESCAPE E'\\\\'", "pixiv/" + $1)
-        has_constraints!
       else
         relation = relation.where("SourcePattern(lower(posts.source)) LIKE SourcePattern(lower(?)) ESCAPE E'\\\\'", q[:source])
-        has_constraints!
       end
     end
 
@@ -215,10 +199,8 @@ class PostQueryBuilder
         relation = relation.where("(lower(posts.source) not like ?)", "http%")
       elsif q[:source_neg] =~ /^(?:https?:\/\/)?%\.?pixiv(?:\.net(?:\/img)?)?(?:%\/img\/|%\/|(?=%$))(.+)$/i
         relation = relation.where("SourcePattern(lower(posts.source)) NOT LIKE lower(?) ESCAPE E'\\\\'", "pixiv/" + $1)
-        has_constraints!
       else
         relation = relation.where("SourcePattern(lower(posts.source)) NOT LIKE SourcePattern(lower(?)) ESCAPE E'\\\\'", q[:source_neg])
-        has_constraints!
       end
     end
 
@@ -230,12 +212,10 @@ class PostQueryBuilder
 
     if q[:subscriptions]
       relation = add_tag_subscription_relation(q[:subscriptions], relation)
-      has_constraints!
     end
 
     if q[:saved_searches]
       relation = add_saved_search_relation(q[:saved_searches], relation)
-      has_constraints!
     end
 
     if q[:uploader_id_neg]
@@ -244,7 +224,6 @@ class PostQueryBuilder
 
     if q[:uploader_id]
       relation = relation.where("posts.uploader_id = ?", q[:uploader_id])
-      has_constraints!
     end
 
     if q[:approver_id_neg]
@@ -259,35 +238,30 @@ class PostQueryBuilder
       else
         relation = relation.where("posts.approver_id = ?", q[:approver_id])
       end
-      has_constraints!
     end
 
     if q[:commenter_ids]
       q[:commenter_ids].each do |commenter_id|
         relation = relation.where("posts.id IN (?)", Comment.unscoped.where("creator_id = ?", commenter_id).select("post_id").uniq)
       end
-      has_constraints!
     end
 
     if q[:noter_ids]
       q[:noter_ids].each do |noter_id|
         relation = relation.where("posts.id IN (?)", Note.unscoped.where("creator_id = ?", noter_id).select("post_id").uniq)
       end
-      has_constraints!
     end
 
     if q[:note_updater_ids]
       q[:note_updater_ids].each do |note_updater_id|
         relation = relation.where("posts.id IN (?)", NoteVersion.unscoped.where("updater_id = ?", note_updater_id).select("post_id").uniq)
       end
-      has_constraints!
     end
 
     if q[:artcomm_ids]
       q[:artcomm_ids].each do |artcomm_id|
         relation = relation.where("posts.id IN (?)", ArtistCommentaryVersion.unscoped.where("updater_id = ?", artcomm_id).select("post_id").uniq)
       end
-      has_constraints!
     end
 
     if q[:post_id_negated]
@@ -300,7 +274,6 @@ class PostQueryBuilder
       relation = relation.where("posts.parent_id IS NOT NULL")
     elsif q[:parent]
       relation = relation.where("(posts.id = ? or posts.parent_id = ?)", q[:parent].to_i, q[:parent].to_i)
-      has_constraints!
     end
 
     if q[:child] == "none"
