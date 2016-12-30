@@ -101,9 +101,7 @@
     );
 
     var prefixes = "-|~|general:|gen:|artist:|art:|copyright:|copy:|co:|character:|char:|ch:";
-    var metatags = "order|-status|status|-rating|rating|-locked|locked|child|filetype|-filetype|" +
-      "-user|user|-approver|approver|commenter|comm|noter|noteupdater|artcomm|-fav|fav|ordfav|" +
-      "sub|-pool|pool|ordpool|favgroup";
+    var metatags = <%= Tag::METATAGS.to_json %>;
 
     $fields_multiple.autocomplete({
       delay: 100,
@@ -161,6 +159,7 @@
         case "child":
         case "filetype":
         case "-filetype":
+        case "flag":
           Danbooru.Autocomplete.static_metatag_source(term, resp, metatag);
           return;
         }
@@ -182,6 +181,8 @@
         case "fav":
         case "-fav":
         case "ordfav":
+        case "flagger":
+        case "-flagger":
           Danbooru.Autocomplete.user_source(term, resp, metatag);
           break;
         case "sub":
@@ -321,6 +322,8 @@
       "comment_bumped", "comment_bumped_asc",
       "note", "note_asc",
       "artcomm", "artcomm_asc",
+      "flagged", "flagged_asc",
+      "flagcount", "flagcount_asc",
       "mpixels", "mpixels_asc",
       "portrait", "landscape",
       "filesize", "filesize_asc",
@@ -341,6 +344,9 @@
     ],
     filetype: [
       "jpg", "png", "gif", "swf", "zip", "webm", "mp4"
+    ],
+    flag: [
+      "unapproved", "rejected", "banned", "deleted", "normal", "any", "none"
     ],
   }
 
