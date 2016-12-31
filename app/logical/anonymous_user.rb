@@ -198,7 +198,8 @@ class AnonymousUser
   end
   
   def statement_timeout
-    3_000
+    # 3_000
+    60_000
   end
   
   def per_page
