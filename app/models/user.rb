@@ -663,6 +663,7 @@ class User < ApplicationRecord
     end
 
     def statement_timeout
+      return 60_000
       if is_platinum?
         9_000
       elsif is_gold?
