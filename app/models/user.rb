@@ -688,7 +688,7 @@ class User < ActiveRecord::Base
     end
 
     def pool_version_count
-      PoolArchive.for_user(id).count
+      PoolArchive.enabled? ? PoolArchive.for_user(id).count : 0
     end
 
     def forum_post_count
