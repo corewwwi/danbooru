@@ -56,11 +56,7 @@
               <tr>
                 <td><%= link_to("#{post_version.post_id}.#{post_version.id}", post_path(post_version.post_id)) %></td>
                 <td><%= compact_time(post_version.updated_at) %></td>
-                <td> 
-                  <% if post_version.updater %>
-                    <%= link_to_user(post_version.updater) %>
-                  <% end %>
-                </td>
+                <td><%= link_to_user(post_version.updater) %></td>
                 <td><%= post_version_diff(post_version) %></td>
               </tr>
             <% end %>

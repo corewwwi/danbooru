@@ -190,11 +190,7 @@ class UserPresenter
   end
 
   def inviter(template)
-    if user.inviter_id
-      template.link_to_user(user.inviter)
-    else
-      "None"
-    end
+    template.link_to_user(user.inviter, blank: "None")
   end
 
   def appeal_count(template)

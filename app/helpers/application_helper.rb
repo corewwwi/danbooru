@@ -93,14 +93,16 @@ module ApplicationHelper
     link_to ip, moderator_ip_addrs_path(:search => {:ip_addr => ip})
   end
 
-  def link_to_user(user, options = {})
+  def link_to_user(user, blank: "", raw_name: false)
+    return blank if user.nil?
+
     user_class = user.level_class
     user_class = user_class + " user-post-approver" if user.can_approve_posts?
     user_class = user_class + " user-post-uploader" if user.can_upload_free?
     user_class = user_class + " user-super-voter" if user.is_super_voter?
     user_class = user_class + " user-banned" if user.is_banned?
     user_class = user_class + " with-style" if CurrentUser.user.style_usernames?
-    if options[:raw_name]
+    if raw_name
       name = user.name
     else
       name = user.pretty_name

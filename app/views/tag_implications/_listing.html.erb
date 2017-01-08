@@ -19,7 +19,7 @@
             <%= link_to tag_implication.forum_topic_id, forum_topic_path(tag_implication.forum_topic_id) %>
           <% end %>
         </td>
-        <td><%= link_to_user(tag_implication.approver) if tag_implication.approver %></td>
+        <td><%= link_to_user(tag_implication.approver) %></td>
         <td id="tag-implication-status-for-<%= tag_implication.id %>"><%= tag_implication.status %></td>
         <td>
           <%= link_to "Show", tag_implication_path(tag_implication) %>

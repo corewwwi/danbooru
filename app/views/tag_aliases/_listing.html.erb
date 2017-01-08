@@ -19,7 +19,7 @@
             <%= link_to tag_alias.forum_topic_id, forum_topic_path(tag_alias.forum_topic_id) %>
           <% end %>
         </td>
-        <td><%= link_to_user(tag_alias.approver) if tag_alias.approver %></td>
+        <td><%= link_to_user(tag_alias.approver) %></td>
         <td id="tag-alias-status-for-<%= tag_alias.id %>">
           <%= tag_alias.status %>
         </td>
