@@ -9,8 +9,8 @@ class SavedSearch < ActiveRecord::Base
         Danbooru.config.aws_sqs_saved_search_url.present?
       end
 
-      def posts_search_available?
-        enabled? && CurrentUser.is_gold?
+      def available?(user = CurrentUser.user)
+        enabled? && user.is_gold?
       end
 
       def sqs_service
