@@ -1,8 +1,11 @@
 class UserPresenter
-  attr_reader :user
+  attr_reader :user, :tags
 
-  def initialize(user)
-    @user = user
+  def initialize(user, search: nil, has_stats: false)
+    @user = has_stats ? user : User.with_upload_stats(Post.tag_match(tags)).where(id: user).first
+
+    @tags = search.try(:[], :tags_match)
+    @tags = "user:#{user.name} #{@tags}".strip
   end
 
   def name
@@ -124,11 +127,19 @@ class UserPresenter
   end
 
   def upload_count(template)
-    template.link_to(user.post_upload_count, template.posts_path(:tags => "user:#{user.name}"))
+    template.link_to(user.upload_count || 0, template.posts_path(:tags => "status:any #{tags}"))
   end
 
   def deleted_upload_count(template)
-    template.link_to(Post.for_user(user.id).deleted.count, template.posts_path(:tags => "status:deleted user:#{user.name}"))
+    template.link_to(user.deleted_count || 0, template.posts_path(:tags => "status:deleted #{tags}"))
+  end
+
+  def approved_upload_count(template)
+    template.link_to(user.approved_count || 0, template.posts_path(:tags => "approver:any #{tags}"))
+  end
+
+  def unmoderated_upload_count(template)
+    template.link_to(user.unmoderated_count || 0, template.posts_path(:tags => "approver:none status:active #{tags}"))
   end
 
   def favorite_count(template)

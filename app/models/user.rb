@@ -747,6 +747,26 @@ class User < ActiveRecord::Base
       end
     end
 
+    def with_upload_stats(posts = Post.all, *selected_columns)
+      columns = {
+        upload_count: "count(*) AS upload_count",
+        deleted_count: "count(*) FILTER (WHERE is_deleted = TRUE) AS deleted_count",
+        approved_count: "count(*) FILTER (WHERE approver_id IS NOT NULL) AS approved_count",
+        unmoderated_count: "count(*) FILTER (WHERE approver_id IS NULL AND is_deleted = FALSE AND is_pending = FALSE) AS unmoderated_count",
+        # pending_count: "count(*) FILTER (WHERE is_pending = TRUE) AS pending_count",
+        # banned_count: "count(*) FILTER (WHERE is_banned = TRUE) AS banned_count",
+        # flagged_count: "count(*) FILTER (WHERE is_flagged = TRUE) AS flagged_count",
+        # avg_score: "avg(score) AS avg_score",
+        # avg_favcount: "avg(fav_count) AS avg_favcount",
+        # avg_tagcount: "avg(tag_count) AS avg_tagcount",
+      }
+      selected_columns = columns.keys if selected_columns.empty?
+      columns = columns.select { |column| column.in?(selected_columns) }
+
+      posts = posts.select(:uploader_id, columns.values).group(:uploader_id).reorder(nil)
+      select("users.*").select("upload_stats.*").joins("LEFT OUTER JOIN (#{posts.to_sql}) AS upload_stats ON users.id = upload_stats.uploader_id")
+    end
+
     def find_for_password_reset(name, email)
       if email.blank?
         where("FALSE")
@@ -757,7 +777,6 @@ class User < ActiveRecord::Base
 
     def search(params)
       q = where("true")
-      return q if params.blank?
 
       if params[:name].present?
         q = q.name_matches(params[:name].mb_chars.downcase.strip.tr(" ", "_"))
@@ -766,6 +785,14 @@ class User < ActiveRecord::Base
       if params[:name_matches].present?
         q = q.name_matches(params[:name_matches].mb_chars.downcase.strip.tr(" ", "_"))
       end
+
+      if params[:tags_match].present?
+        posts = Post.tag_match(params[:tags_match])
+      else
+        posts = Post.all
+      end
+
+      q = q.with_upload_stats(posts)
 
       if params[:min_level].present?
         q = q.where("level >= ?", params[:min_level].to_i)
@@ -821,7 +848,16 @@ class User < ActiveRecord::Base
         q = q.order("name")
 
       when "post_upload_count"
-        q = q.order("post_upload_count desc")
+        q = q.order("upload_count desc nulls last")
+
+      when "deleted_count"
+        q = q.order("upload_stats.deleted_count desc nulls last")
+
+      when "approved_count"
+        q = q.order("upload_stats.approved_count desc nulls last")
+
+      when "unmoderated_count"
+        q = q.order("upload_stats.unmoderated_count desc nulls last")
 
       when "note_count"
         q = q.order("note_update_count desc")

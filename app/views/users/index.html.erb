@@ -14,6 +14,8 @@
           <th>Name</th>
           <th>Posts</th>
           <th>Deleted</th>
+          <th>Approved</th>
+          <th>Unmoderated</th>
           <% if CurrentUser.is_moderator? %>
             <th><abbr title="3+ Score Binomial Confidence Interval">5+ SBCI</abbr></th>
             <th><abbr title="6+ Score Binomial Confidence Interval">10+ SBCI</abbr></th>
@@ -26,6 +28,7 @@
       </thead>
       <tbody>
         <% @users.each do |user| %>
+          <% presenter = UserPresenter.new(user, search: params[:search], has_stats: true) %>
           <tr>
             <td>
               <% if CurrentUser.is_admin? %>
@@ -38,8 +41,10 @@
                 &larr; <%= link_to_user user.inviter %>
               <% end %>
             </td>
-            <td><%= link_to user.posts.count, posts_path(:tags => "user:#{user.name}") %></td>
-            <td><%= user.posts.deleted.count %></td>
+            <td><%= presenter.upload_count(self) %></td>
+            <td><%= presenter.deleted_upload_count(self) %></td>
+            <td><%= presenter.approved_upload_count(self) %></td>
+            <td><%= presenter.unmoderated_upload_count(self) %></td>
             <% if CurrentUser.is_moderator? %>
               <td><%= number_to_percentage Reports::UserPromotions.confidence_interval_for(user, 3), :precision => 0 %></td>
               <td><%= number_to_percentage Reports::UserPromotions.confidence_interval_for(user, 6), :precision => 0 %></td>
