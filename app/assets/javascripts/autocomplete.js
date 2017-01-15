@@ -39,7 +39,7 @@
   Danbooru.Autocomplete.initialize_mention_autocomplete = function() {
     var $fields = $(".autocomplete-mentions textarea");
     $fields.autocomplete({
-      delay: 500,
+      delay: 100,
       minLength: 2,
       autoFocus: true,
       focus: function() {
@@ -356,7 +356,7 @@
     $.ajax({
       url: "/users.json",
       data: {
-        "search[order]": "post_upload_count",
+        "search[order]": "name",
         "search[current_user_first]": "true",
         "search[name_matches]": term + "*",
         "limit": 10
