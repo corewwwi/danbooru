@@ -105,8 +105,9 @@ module Danbooru
 
           c = except(:offset, :limit, :order)
           c = c.reorder(nil)
-          c = c.count
-          c.respond_to?(:count) ? c.count : c
+
+          query = "SELECT count(*) AS total_count FROM (#{c.to_sql}) AS counted_query"
+          connection.execute(query).first.try(:[], "total_count").to_i
         rescue ActiveRecord::StatementInvalid => e
           if e.to_s =~ /statement timeout/
             1_000_000
