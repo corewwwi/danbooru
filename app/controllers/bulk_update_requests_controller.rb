@@ -5,12 +5,12 @@ class BulkUpdateRequestsController < ApplicationController
   before_filter :load_bulk_update_request, :except => [:new, :create, :index]
 
   def new
-    @bulk_update_request = BulkUpdateRequest.new(:user_id => CurrentUser.user.id)
+    @bulk_update_request = BulkUpdateRequest.new(create_params)
     respond_with(@bulk_update_request)
   end
 
   def create
-    @bulk_update_request = BulkUpdateRequest.create(params[:bulk_update_request])
+    @bulk_update_request = BulkUpdateRequest.create(create_params)
     respond_with(@bulk_update_request, :location => bulk_update_requests_path)
   end
 
@@ -51,6 +51,10 @@ class BulkUpdateRequestsController < ApplicationController
   end
 
   private
+
+  def create_params
+    params.require(:bulk_update_request).permit(:forum_topic_id, :script, :title, :reason, :skip_secondary_validations)
+  end
 
   def load_bulk_update_request
     @bulk_update_request = BulkUpdateRequest.find(params[:id])
