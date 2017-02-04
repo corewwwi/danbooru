@@ -33,7 +33,7 @@ module Moderator
 
         context "undelete action" do
           should "render" do
-            @post.update(is_deleted: true)
+            @post.update_column(:is_deleted, true)
             post :undelete, {:id => @post.id, :format => "js"}, {:user_id => @admin.id}
 
             assert_response :success
@@ -49,17 +49,50 @@ module Moderator
         end
 
         context "move_favorites action" do
+          setup do
+            @parent = FactoryGirl.create(:post)
+            @child = FactoryGirl.create(:post, parent: @parent)
+
+            @voter1 = FactoryGirl.create(:gold_user)
+            @voter2 = FactoryGirl.create(:gold_user)
+            @faver1 = FactoryGirl.create(:gold_user)
+            @faver2 = FactoryGirl.create(:gold_user)
+            @faver3 = FactoryGirl.create(:user)
+
+            @child.vote!("up", @voter1)
+            @child.vote!("up", @voter2)
+            @child.add_favorite!(@faver1)
+            @child.add_favorite!(@faver2)
+            @child.add_favorite!(@faver3)
+
+            @parent.vote!("up", @voter2)
+            @parent.add_favorite!(@faver2)
+            @parent.add_favorite!(@faver3)
+          end
+
           should "render" do
-            parent = FactoryGirl.create(:post)
-            child = FactoryGirl.create(:post, parent: parent)
-            users = FactoryGirl.create_list(:user, 2)
-            users.each { |u| child.add_favorite!(u) }
+            put :move_favorites, { id: @child.id, commit: "Submit" }, { user_id: @admin.id }
 
-            put :move_favorites, { id: child.id, commit: "Submit" }, { user_id: @admin.id }
+            assert_redirected_to(@child)
+          end
 
-            assert_redirected_to(child)
-            assert_equal(users, parent.reload.favorited_users)
-            assert_equal([], child.reload.favorited_users)
+          should "move favorites from child to parent" do
+            put :move_favorites, { id: @child.id, commit: "Submit" }, { user_id: @admin.id }
+            CurrentUser.user = @admin
+
+            assert_equal([@faver2.id, @faver3.id, @faver1.id], @parent.reload.favorited_users.map(&:id))
+            assert(@child.reload.favorited_users.empty?)
+          end
+
+          should "move votes from child to parent" do
+            assert_equal([@voter2.id, @faver2.id], @parent.votes.map(&:user_id))
+            assert_equal([@voter1.id, @voter2.id, @faver1.id, @faver2.id], @child.votes.map(&:user_id))
+
+            put :move_favorites, { id: @child.id, commit: "Submit" }, { user_id: @admin.id }
+            CurrentUser.user = @admin
+
+            assert_equal([@voter1.id, @voter2.id, @faver1.id, @faver2.id], @parent.reload.votes.order("id").map(&:user_id))
+            assert(@child.reload.votes.empty?)
           end
         end
 
