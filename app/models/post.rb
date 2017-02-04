@@ -951,7 +951,7 @@ class Post < ActiveRecord::Base
 
     def add_favorite!(user)
       Favorite.add(self, user)
-      vote!("up") if CurrentUser.is_gold?
+      vote!("up", user) if user.is_gold?
     rescue PostVote::Error
     end
 
@@ -961,7 +961,7 @@ class Post < ActiveRecord::Base
 
     def remove_favorite!(user)
       Favorite.remove(self, user)
-      unvote! if CurrentUser.is_gold?
+      unvote!(user) if user.is_gold?
     rescue PostVote::Error
     end
 
@@ -1071,24 +1071,24 @@ class Post < ActiveRecord::Base
       !PostVote.exists?(:user_id => user.id, :post_id => id)
     end
 
-    def vote!(score)
-      unless CurrentUser.is_voter?
+    def vote!(score, voter = CurrentUser.user)
+      unless voter.is_voter?
         raise PostVote::Error.new("You do not have permission to vote")
       end
 
-      unless can_be_voted_by?(CurrentUser.user)
+      unless can_be_voted_by?(voter)
         raise PostVote::Error.new("You have already voted for this post")
       end
 
-      PostVote.create!(:post_id => id, :score => score)
+      voter.post_votes.create!(:post_id => id, :score => score)
       reload # PostVote.create modifies our score. Reload to get the new score.
     end
 
-    def unvote!
-      if can_be_voted_by?(CurrentUser.user)
+    def unvote!(voter = CurrentUser.user)
+      if can_be_voted_by?(voter)
         raise PostVote::Error.new("You have not voted for this post")
       else
-        vote = PostVote.where("post_id = ? and user_id = ?", id, CurrentUser.user.id).first
+        vote = voter.post_votes.find_by(post_id: id)
         vote.destroy
 
         self.reload
