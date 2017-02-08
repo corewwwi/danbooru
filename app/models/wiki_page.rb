@@ -1,18 +1,17 @@
 class WikiPage < ActiveRecord::Base
   class RevertError < Exception ; end
 
-  before_save :normalize_title
-  before_save :normalize_other_names
   before_validation :initialize_creator, :on => :create
   before_validation :initialize_updater
-  after_save :create_version
-  belongs_to :creator, :class_name => "User"
-  belongs_to :updater, :class_name => "User"
-  validates_uniqueness_of :title, :case_sensitive => false
-  validates_presence_of :title
+  before_validation :normalize_other_names
+  validates :title, tag_name: true, uniqueness: true, case_sensitive: false, if: :title_changed?
   validate :validate_locker_is_builder
   validate :validate_not_locked
+  after_save :create_version
+
   attr_accessible :title, :body, :is_locked, :is_deleted, :other_names
+  belongs_to :creator, :class_name => "User"
+  belongs_to :updater, :class_name => "User"
   has_one :tag, :foreign_key => "name", :primary_key => "title"
   has_one :artist, lambda {where(:is_active => true)}, :foreign_key => "name", :primary_key => "title"
   has_many :versions, lambda {order("wiki_page_versions.id ASC")}, :class_name => "WikiPageVersion", :dependent => :destroy
@@ -136,8 +135,8 @@ class WikiPage < ActiveRecord::Base
     save!
   end
 
-  def normalize_title
-    self.title = title.mb_chars.downcase.tr(" ", "_")
+  def title=(title)
+    self[:title] = Tag.normalize_name(title)
   end
 
   def normalize_other_names
