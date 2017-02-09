@@ -23,7 +23,7 @@ class AdvertisementsController < ApplicationController
   end
 
   def create
-    @advertisement = Advertisement.new(params[:advertisement])
+    @advertisement = Advertisement.new(permitted_params)
     if @advertisement.save
       redirect_to advertisement_path(@advertisement), :notice => "Advertisement created"
     else
@@ -34,7 +34,7 @@ class AdvertisementsController < ApplicationController
 
   def update
     @advertisement = Advertisement.find(params[:id])
-    if @advertisement.update_attributes(params[:advertisement])
+    if @advertisement.update_attributes(permitted_params)
       redirect_to advertisement_path(@advertisement), :notice => "Advertisement updated"
     else
       flash[:notice] = "There were errors"
@@ -54,5 +54,9 @@ private
       raise User::PrivilegeError
       return false
     end
+  end
+
+  def permitted_params
+    params.require(:advertisement).permit(:ad_type, :width, :height, :referral_url, :status, :file_name, :is_work_safe, :hit_count)
   end
 end
