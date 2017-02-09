@@ -1,19 +1,18 @@
 require 'digest/sha1'
 
 class Dmail < ActiveRecord::Base
+  after_initialize :initialize_creator, on: :create
   validates_presence_of :to_id
   validates_presence_of :from_id
   validates_format_of :title, :with => /\S/
   validates_format_of :body, :with => /\S/
   validate :validate_sender_is_not_banned
-  before_validation :initialize_from_id, :on => :create
   belongs_to :owner, :class_name => "User"
   belongs_to :to, :class_name => "User"
   belongs_to :from, :class_name => "User"
   before_create :auto_read_if_filtered
   after_create :update_recipient
   after_create :send_dmail
-  attr_accessible :title, :body, :is_deleted, :to_id, :to, :to_name, :creator_ip_addr
 
   module AddressMethods
     def to_name
@@ -30,8 +29,9 @@ class Dmail < ActiveRecord::Base
       self.to_id = user.id
     end
 
-    def initialize_from_id
-      self.from_id = CurrentUser.id
+    def initialize_creator
+      self.from_id ||= CurrentUser.id
+      self.creator_ip_adddr ||= CurrentUser.ip_addr
     end
   end
 
