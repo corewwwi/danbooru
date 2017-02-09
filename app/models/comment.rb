@@ -18,8 +18,6 @@ class Comment < ActiveRecord::Base
   after_destroy(:if => lambda {|rec| CurrentUser.id != rec.creator_id}) do |rec|
     ModAction.log("comment ##{rec.id} deleted by #{CurrentUser.name}")
   end
-  attr_accessible :body, :post_id, :do_not_bump_post, :is_deleted, :as => [:member, :gold, :platinum, :builder, :janitor, :moderator, :admin]
-  attr_accessible :is_sticky, :as => [:moderator, :admin]
   mentionable(
     :message_field => :body, 
     :user_field => :creator_id, 

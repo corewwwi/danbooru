@@ -1,6 +1,7 @@
 class CommentsController < ApplicationController
   respond_to :html, :xml, :json
   before_filter :member_only, :except => [:index, :search, :show]
+  before_filter :check_privilege, :only => [:update, :edit, :destroy, :undelete]
   rescue_from ActiveRecord::StatementInvalid, :with => :rescue_exception
   skip_before_filter :api_check
 
@@ -22,14 +23,12 @@ class CommentsController < ApplicationController
   end
 
   def update
-    @comment = Comment.find(params[:id])
-    check_privilege(@comment)
-    @comment.update(update_params, :as => CurrentUser.role)
-    respond_with(@comment, :location => post_path(@comment.post_id))
+    comment.update(update_params)
+    respond_with(comment, :location => post_path(comment.post_id))
   end
 
   def create
-    @comment = Comment.create(create_params, :as => CurrentUser.role)
+    @comment = Comment.create(create_params)
     respond_with(@comment) do |format|
       format.html do
         if @comment.errors.any?
@@ -42,30 +41,23 @@ class CommentsController < ApplicationController
   end
 
   def edit
-    @comment = Comment.find(params[:id])
-    check_privilege(@comment)
-    respond_with(@comment)
+    respond_with(comment)
   end
 
   def show
-    @comment = Comment.find(params[:id])
-    respond_with(@comment)
+    respond_with(comment)
   end
 
   def destroy
-    @comment = Comment.find(params[:id])
-    check_privilege(@comment)
-    @comment.delete!
-    respond_with(@comment) do |format|
+    comment.delete!
+    respond_with(comment) do |format|
       format.js
     end
   end
 
   def undelete
-    @comment = Comment.find(params[:id])
-    check_privilege(@comment)
-    @comment.undelete!
-    respond_with(@comment) do |format|
+    comment.undelete!
+    respond_with(comment) do |format|
       format.js
     end
   end
@@ -99,7 +91,11 @@ private
     end
   end
 
-  def check_privilege(comment)
+  def comment
+    @comment ||= Comment.find(params[:id])
+  end
+
+  def check_privilege
     if !comment.editable_by?(CurrentUser.user)
       raise User::PrivilegeError
     end
@@ -110,6 +106,10 @@ private
   end
 
   def update_params
-    params.require(:comment).permit(:body, :is_deleted, :is_sticky)
+    attributes = []
+    attributes += [:body, :is_deleted] if comment.editable_by?(CurrentUser.user)
+    attributes += [:is_sticky] if CurrentUser.is_moderator?
+
+    params.require(:comment).permit(attributes)
   end
 end
