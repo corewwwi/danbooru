@@ -115,7 +115,7 @@ class BulkUpdateRequest < ActiveRecord::Base
   end
 
   def initialize_attributes
-    self.user_id = CurrentUser.user.id unless self.user_id
+    self.user_id ||= CurrentUser.user.id
     self.status = "pending"
   end
 

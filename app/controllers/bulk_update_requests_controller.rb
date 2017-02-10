@@ -10,7 +10,7 @@ class BulkUpdateRequestsController < ApplicationController
   end
 
   def create
-    @bulk_update_request = BulkUpdateRequest.create(params[:bulk_update_request])
+    @bulk_update_request = BulkUpdateRequest.create(permitted_params)
     respond_with(@bulk_update_request, :location => bulk_update_requests_path)
   end
 
@@ -21,28 +21,22 @@ class BulkUpdateRequestsController < ApplicationController
   end
 
   def update
-    if @bulk_update_request.editable?(CurrentUser.user)
-      @bulk_update_request.update_attributes(params[:bulk_update_request])
-      flash[:notice] = "Bulk update request updated"
-      respond_with(@bulk_update_request, :location => bulk_update_requests_path)
-    else
-      access_denied()
-    end
+    @bulk_update_request.update(permitted_params)
+    flash[:notice] = "Bulk update request updated"
+    respond_with(@bulk_update_request, :location => bulk_update_requests_path)
   end
 
   def approve
+    raise User::PrivilegeError unless CurrentUser.is_admin?
     @bulk_update_request.approve!(CurrentUser.user)
     respond_with(@bulk_update_request, :location => bulk_update_requests_path)
   end
 
   def destroy
-    if @bulk_update_request.editable?(CurrentUser.user)
-      @bulk_update_request.reject!
-      flash[:notice] = "Bulk update request rejected"
-      respond_with(@bulk_update_request, :location => bulk_update_requests_path)
-    else
-      access_denied()
-    end
+    raise User::PrivilegeError unless @bulk_update_request.editable?(CurrentUser.user)
+    @bulk_update_request.reject!
+    flash[:notice] = "Bulk update request rejected"
+    respond_with(@bulk_update_request, :location => bulk_update_requests_path)
   end
 
   def index
@@ -54,5 +48,13 @@ class BulkUpdateRequestsController < ApplicationController
 
   def load_bulk_update_request
     @bulk_update_request = BulkUpdateRequest.find(params[:id])
+  end
+
+  def permitted_params
+    attributes =  []
+    attributes += [:forum_topic_id, :script, :title, :reason, :skip_secondary_validations] if @bulk_update_request.editable?(CurrentUser.user)
+    attributes += [:status, :approver_id] if CurrentUser.is_admin?
+
+    params.require(:bulk_update_request).permit(attributes)
   end
 end
