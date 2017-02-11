@@ -6,9 +6,9 @@ class Artist < ActiveRecord::Base
   after_save :create_version
   after_save :save_url_string
   after_save :categorize_tag
-  validates_uniqueness_of :name
-  validate :name_is_valid
-  validate :wiki_is_empty, :on => :create
+  validates :name, tag_name: true, uniqueness: true, if: :name_changed?
+  validate :wiki_is_empty, if: :name_changed?
+
   belongs_to :creator, :class_name => "User"
   has_many :members, :class_name => "Artist", :foreign_key => "group_name", :primary_key => "name"
   has_many :urls, :dependent => :destroy, :class_name => "ArtistUrl"
@@ -91,18 +91,6 @@ class Artist < ActiveRecord::Base
     module ClassMethods
       def normalize_name(name)
         name.to_s.mb_chars.downcase.strip.gsub(/ /, '_').to_s
-      end
-    end
-
-    def name_is_valid
-      if name =~ /^[-~]/
-        errors[:name] << "cannot begin with - or ~"
-        false
-      elsif name =~ /\*/
-        errors[:name] << "cannot contain *"
-        false
-      else
-        true
       end
     end
 
