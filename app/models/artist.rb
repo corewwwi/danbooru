@@ -2,7 +2,6 @@ class Artist < ActiveRecord::Base
   class RevertError < Exception ; end
 
   before_create :initialize_creator
-  before_validation :normalize_name
   after_save :create_version
   after_save :save_url_string
   after_save :categorize_tag
@@ -90,12 +89,12 @@ class Artist < ActiveRecord::Base
 
     module ClassMethods
       def normalize_name(name)
-        name.to_s.mb_chars.downcase.strip.gsub(/ /, '_').to_s
+        Tag.normalize_name(name)
       end
     end
 
-    def normalize_name
-      self.name = Artist.normalize_name(name)
+    def name=(name)
+      super Artist.normalize_name(name)
     end
 
     def pretty_name
