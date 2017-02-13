@@ -1,4 +1,14 @@
 GIT
+  remote: git://github.com/evazion/dtext_rb.git
+  revision: 360a8b4d32033858624cc815578043d01552adf7
+  branch: feat-colorize-wiki-links
+  specs:
+    dtext_rb (1.4.0)
+      jeweler (~> 2.0)
+      minitest (~> 5.8)
+      rake-compiler (~> 0.9)
+
+GIT
   remote: https://github.com/abronte/BigQuery.git
   revision: b92b4e0b54574e3fde7ad910f39a67538ed387ad
   ref: b92b4e0b54574e3fde7ad910f39a67538ed387ad
@@ -12,15 +22,6 @@ GIT
   revision: ff796c262db5a22f14b4765c09655b4faccc132a
   specs:
     diff-lcs (1.3)
-
-GIT
-  remote: https://github.com/r888888888/dtext_rb.git
-  revision: 4964b4212075721c0b72bed87cc0c401ab994615
-  specs:
-    dtext_rb (1.3.0)
-      jeweler (~> 2.0)
-      minitest (~> 5.8)
-      rake-compiler (~> 0.9)
 
 GIT
   remote: https://github.com/r888888888/ruby-imagespec.git
@@ -176,7 +177,7 @@ GEM
       multi_json (~> 1.11)
       os (~> 0.9)
       signet (~> 0.7)
-    hashie (3.4.6)
+    hashie (3.5.3)
     highline (1.7.8)
     hike (1.2.3)
     http (0.6.4)
@@ -187,7 +188,7 @@ GEM
     httpclient (2.8.0)
     hurley (0.2)
     i18n (0.8.0)
-    jeweler (2.3.2)
+    jeweler (2.3.3)
       builder
       bundler (>= 1.0)
       git (>= 1.2.5)

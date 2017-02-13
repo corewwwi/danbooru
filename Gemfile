@@ -41,7 +41,9 @@ gem 'twitter'
 gem 'aws-sdk', '~> 2'
 gem 'responders'
 gem 'highline'
-gem 'dtext_rb', :git => "https://github.com/r888888888/dtext_rb.git", :require => "dtext"
+#gem 'dtext_rb', :git => "https://github.com/r888888888/dtext_rb.git", :require => "dtext"
+#gem 'dtext_rb', :path => "~/src/dtext_rb", :require => "dtext"
+gem 'dtext_rb', :github => "evazion/dtext_rb", :branch => "feat-colorize-wiki-links", :require => "dtext"
 gem 'google-api-client'
 gem 'cityhash'
 gem 'bigquery', :git => "https://github.com/abronte/BigQuery.git", :ref => "b92b4e0b54574e3fde7ad910f39a67538ed387ad"

@@ -1,5 +1,3 @@
-require 'dtext'
-
 module ApplicationHelper
   def wordbreakify(string)
     lines = string.scan(/.{1,10}/)
@@ -51,7 +49,13 @@ module ApplicationHelper
 
   def format_text(text, options = {})
     if options[:ragel]
-      raw(DTextRagel.parse(text))
+      raw DTextRagel.parse(text) { |type, str|
+        if type == "basic_wiki_link"
+          tag = Tag.normalize_name(str)
+          n = Tag.category_for(tag)
+          %(<a class="dtext-link dtext-wiki-link tag-type-#{n}" href="/wiki_pages/show_or_new?title=#{u tag}">#{h str}</a>)
+        end
+      }
     else
       DText.parse(text)
     end
