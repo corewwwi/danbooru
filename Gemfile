@@ -61,6 +61,9 @@ end
 group :development, :test do
   gem 'awesome_print'
   gem 'pry-byebug'
+  gem 'pry-rails'
+  gem 'pry-inline'
+  gem 'meta_request'
   gem 'ruby-prof'
 end
 
