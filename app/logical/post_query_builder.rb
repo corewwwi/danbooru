@@ -372,6 +372,14 @@ class PostQueryBuilder
       relation = relation.where.not("post_flags.creator_id": q[:flagger_neg])
     end
 
+    if q[:flagreason].present?
+      relation = relation.where("post_flags.reason ILIKE ?", q[:flagreason].to_escaped_for_sql_like)
+    end
+
+    if q[:flagreason_neg].present?
+      relation = relation.where("post_flags.reason NOT ILIKE ?", q[:flagreason_neg].to_escaped_for_sql_like)
+    end
+
     if q[:ordfav].present?
       user_id = q[:ordfav].to_i
       user = User.find(user_id)

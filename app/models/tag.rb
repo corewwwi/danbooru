@@ -59,6 +59,8 @@ class Tag < ActiveRecord::Base
     -filetype
     flagger
     -flagger
+    flagreason
+    -flagreason
   ).join("|")
 
   SUBQUERY_METATAGS = "commenter|comm|noter|noteupdater|artcomm"
@@ -700,6 +702,12 @@ class Tag < ActiveRecord::Base
             if CurrentUser.is_moderator? || CurrentUser.id == User.name_to_id($2).try(:to_i)
               q[:flagger_neg] = User.name_to_id($2).try(:to_i)
             end
+
+          when "flagreason"
+            q[:flagreason] = $2
+
+          when "-flagreason"
+            q[:flagreason_neg] = $2
           end
         else
           parse_tag(token, q[:tags])
