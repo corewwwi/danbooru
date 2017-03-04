@@ -475,6 +475,12 @@ class PostQueryBuilder
       relation = relation.joins("INNER JOIN artist_commentaries ON artist_commentaries.post_id = posts.id")
       relation = relation.order("artist_commentaries.updated_at ASC, posts.id DESC")
 
+    when "flagged"
+      relation = relation.order("post_flags.id DESC NULLS LAST")
+
+    when "flagged_asc"
+      relation = relation.order("post_flags.id ASC NULLS LAST")
+
     when "mpixels", "mpixels_desc"
       relation = relation.where("posts.image_width is not null and posts.image_height is not null")
       # Use "w*h/1000000", even though "w*h" would give the same result, so this can use
