@@ -57,6 +57,8 @@ class Tag < ActiveRecord::Base
     downvote
     filetype
     -filetype
+    flagger
+    -flagger
   ).join("|")
 
   SUBQUERY_METATAGS = "commenter|comm|noter|noteupdater|artcomm"
@@ -689,8 +691,16 @@ class Tag < ActiveRecord::Base
               q[:downvote] = User.name_to_id($2)
             end
 
-          end
+          when "flagger"
+            if CurrentUser.is_moderator? || CurrentUser.id == User.name_to_id($2).try(:to_i)
+              q[:flagger] = User.name_to_id($2).try(:to_i)
+            end
 
+          when "-flagger"
+            if CurrentUser.is_moderator? || CurrentUser.id == User.name_to_id($2).try(:to_i)
+              q[:flagger_neg] = User.name_to_id($2).try(:to_i)
+            end
+          end
         else
           parse_tag(token, q[:tags])
         end

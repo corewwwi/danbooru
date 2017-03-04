@@ -353,6 +353,25 @@ class PostQueryBuilder
       relation = relation.where("posts.id in (?)", post_ids)
     end
 
+    # FIXME: If we're using a flag metatag, we have to join on the post_flags
+    # table, *unless* the relation *is* the post_flags table. The join would
+    # fail in that case. This happens when we're called by e.g.
+    # PostFlag.post_tags_match("order:flagged") via /post_flags?search[post_tags_match]=order:flagged.
+    if relation.class != PostFlag::ActiveRecord_Relation &&
+       ((q.keys & [:flagger, :flagger_neg, :flagreason, :flagreason_neg, :flag, :flag_neg]).present? || q[:order].in?(%w(flagged flagged_asc)))
+      # relation = relation.joins("INNER JOIN post_flags ON post_flags.post_id = posts.id")
+      # relation = relation.distinct.left_outer_joins(:flags)
+      relation = relation.joins("LEFT OUTER JOIN post_flags ON post_flags.post_id = posts.id")
+    end
+
+    if q[:flagger].present?
+      relation = relation.where("post_flags.creator_id": q[:flagger])
+    end
+
+    if q[:flagger_neg].present?
+      relation = relation.where.not("post_flags.creator_id": q[:flagger_neg])
+    end
+
     if q[:ordfav].present?
       user_id = q[:ordfav].to_i
       user = User.find(user_id)
