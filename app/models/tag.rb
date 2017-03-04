@@ -61,6 +61,7 @@ class Tag < ActiveRecord::Base
     -flagger
     flagreason
     -flagreason
+    flag
   ).join("|")
 
   SUBQUERY_METATAGS = "commenter|comm|noter|noteupdater|artcomm"
@@ -692,6 +693,9 @@ class Tag < ActiveRecord::Base
             if CurrentUser.user.is_moderator?
               q[:downvote] = User.name_to_id($2)
             end
+
+          when "flag"
+            q[:flag] = $2.downcase.to_sym
 
           when "flagger"
             if CurrentUser.is_moderator? || CurrentUser.id == User.name_to_id($2).try(:to_i)

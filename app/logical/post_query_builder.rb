@@ -380,6 +380,32 @@ class PostQueryBuilder
       relation = relation.where("post_flags.reason NOT ILIKE ?", q[:flagreason_neg].to_escaped_for_sql_like)
     end
 
+    if q[:flag].present?
+      condition = case q[:flag]
+      when :unapproved
+        ["post_flags.reason = ?", PostFlag::Reasons::UNAPPROVED]
+      when :rejected
+        ["post_flags.reason LIKE ?", PostFlag::Reasons::REJECTED]
+      when :banned
+        ["post_flags.reason = ?", PostFlag::Reasons::BANNED]
+      when :deleted
+        ["post_flags.reason = ? OR post_flags.reason LIKE ?",
+         PostFlag::Reasons::UNAPPROVED, PostFlag::Reasons::REJECTED]
+      when :normal
+        ["post_flags.reason NOT IN (?) AND post_flags.reason NOT LIKE ?",
+         [PostFlag::Reasons::UNAPPROVED, PostFlag::Reasons::BANNED], PostFlag::Reasons::REJECTED]
+      when :none
+        ["post_flags.id IS NULL"]
+      when :any
+        ["post_flags.id IS NOT NULL"]
+      else
+        ["post_flags.id IS NOT NULL"]
+      end
+
+      relation = relation.where("post_flags.id IS NOT NULL") if q[:flag] != :none
+      relation = relation.where(condition)
+    end
+
     if q[:ordfav].present?
       user_id = q[:ordfav].to_i
       user = User.find(user_id)
