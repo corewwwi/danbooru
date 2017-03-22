@@ -8,7 +8,10 @@ class PostVote < ActiveRecord::Base
   validates_inclusion_of :score, :in => [SuperVoter::MAGNITUDE, 1, -1, -SuperVoter::MAGNITUDE]
   validates_uniqueness_of :user_id, :scope => :post_id, :message => "have already voted for this post", strict: PostVote::Error
   validate :validate_user_can_vote
-  attr_accessible :post_id, :user_id, :score
+
+  attr_accessible :post_id, :user_id, :score, :vote
+
+  after_save :update_post_on_save
   after_destroy :update_post_on_destroy
 
   def self.prune!
@@ -27,18 +30,25 @@ class PostVote < ActiveRecord::Base
     select_values_sql("select post_id from post_votes where score > 0 and user_id = ?", user_id)
   end
 
-  def score=(x)
+  def vote=(x)
     if x == "up"
-      Post.where(:id => post_id).update_all("score = score + #{magnitude}, up_score = up_score + #{magnitude}")
       write_attribute(:score, magnitude)
     elsif x == "down"
-      Post.where(:id => post_id).update_all("score = score - #{magnitude}, down_score = down_score - #{magnitude}")
       write_attribute(:score, -magnitude)
     end
   end
 
   def initialize_user
     self.user_id ||= CurrentUser.user.id
+  end
+
+  # XXX should validate that non-supervotes can't supervote.
+  def update_post_on_save
+    if score > 0
+      Post.where(:id => post_id).update_all("score = score + #{score}, up_score = up_score + #{score}")
+    else
+      Post.where(:id => post_id).update_all("score = score + #{score}, down_score = down_score + #{score}")
+    end
   end
 
   def update_post_on_destroy

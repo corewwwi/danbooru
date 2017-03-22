@@ -1068,7 +1068,7 @@ class Post < ActiveRecord::Base
 
   module VoteMethods
     def vote!(score, voter = CurrentUser.user)
-      voter.post_votes.create!(:post_id => id, :score => score)
+      voter.post_votes.create!(:post_id => id, :vote => score)
       reload # PostVote.create modifies our score. Reload to get the new score.
     end
 
