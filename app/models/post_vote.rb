@@ -2,9 +2,12 @@ class PostVote < ActiveRecord::Base
   class Error < Exception ; end
 
   belongs_to :post
+  belongs_to :user
   before_validation :initialize_user, :on => :create
   validates_presence_of :post_id, :user_id, :score
   validates_inclusion_of :score, :in => [SuperVoter::MAGNITUDE, 1, -1, -SuperVoter::MAGNITUDE]
+  validates_uniqueness_of :user_id, :scope => :post_id, :message => "have already voted for this post", strict: PostVote::Error
+  validate :validate_user_can_vote
   attr_accessible :post_id, :user_id, :score
   after_destroy :update_post_on_destroy
 
@@ -52,5 +55,9 @@ class PostVote < ActiveRecord::Base
     else
       1
     end
+  end
+
+  def validate_user_can_vote
+    raise PostVote::Error.new("You do not have permission to vote") unless user.is_voter?
   end
 end

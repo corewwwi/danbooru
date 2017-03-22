@@ -4,7 +4,7 @@ class PostVoteTest < ActiveSupport::TestCase
   def setup
     super
     
-    user = FactoryGirl.create(:user)
+    user = FactoryGirl.create(:gold_user)
     CurrentUser.user = user
     CurrentUser.ip_addr = "127.0.0.1"
     MEMCACHE.flush_all

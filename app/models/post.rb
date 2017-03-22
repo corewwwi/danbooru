@@ -1067,32 +1067,17 @@ class Post < ActiveRecord::Base
   end
 
   module VoteMethods
-    def can_be_voted_by?(user)
-      !PostVote.exists?(:user_id => user.id, :post_id => id)
-    end
-
     def vote!(score, voter = CurrentUser.user)
-      unless voter.is_voter?
-        raise PostVote::Error.new("You do not have permission to vote")
-      end
-
-      unless can_be_voted_by?(voter)
-        raise PostVote::Error.new("You have already voted for this post")
-      end
-
       voter.post_votes.create!(:post_id => id, :score => score)
       reload # PostVote.create modifies our score. Reload to get the new score.
     end
 
     def unvote!(voter = CurrentUser.user)
-      if can_be_voted_by?(voter)
-        raise PostVote::Error.new("You have not voted for this post")
-      else
-        vote = voter.post_votes.find_by(post_id: id)
-        vote.destroy
+      vote = voter.post_votes.find_by(post_id: id)
+      raise PostVote::Error.new("You have not voted for this post") unless vote.present?
 
-        self.reload
-      end
+      vote.destroy
+      reload
     end
   end
 
