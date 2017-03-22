@@ -1285,6 +1285,11 @@ class Post < ActiveRecord::Base
       favorites.each do |fav|
         fav.move(parent)
       end
+
+      votes.each do |vote|
+        unvote!(vote.user)
+        vote.user.post_votes.create!(post: parent, score: vote.score)
+      end
     end
 
     def parent_exists?
