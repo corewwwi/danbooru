@@ -2,11 +2,10 @@ require 'test_helper'
 
 class FavoriteTest < ActiveSupport::TestCase
   setup do
-    user = FactoryGirl.create(:user)
-    CurrentUser.user = user
+    @user = FactoryGirl.create(:user)
+    CurrentUser.user = @user
     CurrentUser.ip_addr = "127.0.0.1"
     MEMCACHE.flush_all
-    Favorite # need to force loading the favorite model
   end
 
   teardown do
@@ -54,6 +53,69 @@ class FavoriteTest < ActiveSupport::TestCase
       p1.add_favorite!(user1)
 
       assert_equal(1, user1.favorites.count)
+    end
+
+    context "when added" do
+      setup do
+        @post = FactoryGirl.create(:post)
+      end
+
+      should "save the favorite in the favorites table" do
+        Favorite.add(@post, @user)
+
+        assert(@post.favorites.where(user: @user).exists?)
+        assert(@user.favorites.where(post: @post).exists?)
+      end
+
+      should "save the favorite in the post's fav_string" do
+        Favorite.add(@post, @user)
+
+        assert(@post.reload.favorited_by?(@user.id))
+      end
+
+      should "increment the post's fav_count" do
+        assert_difference("@post.reload.fav_count", 1) do
+          Favorite.add(@post, @user)
+        end
+      end
+
+      should "increment the user's favorite_count" do
+        assert_difference("@user.reload.favorite_count", 1) do
+          Favorite.add(@post, @user)
+        end
+      end
+    end
+
+    context "when removed" do
+      setup do
+        @post = FactoryGirl.create(:post)
+        Favorite.add(@post, @user)
+      end
+
+      should "remove the favorite from the favorite table" do
+        Favorite.remove(@post, @user)
+
+        assert_not(@post.favorites.where(user: @user).exists?)
+        assert_not(@user.favorites.where(post: @post).exists?)
+      end
+
+      should "remove the favorite from the post's fav_string" do
+        Favorite.remove(@post, @user)
+
+        assert_not(!!@post.reload.favorited_by?(@user.id))
+      end
+
+      should "decrement the post's fav_count" do
+        assert_difference("@post.reload.fav_count", -1) do
+          Favorite.remove(@post, @user)
+        end
+      end
+
+      should "decrement the user's favorite_count" do
+        assert_difference("@user.reload.favorite_count", -1) do
+          Favorite.remove(@post, @user)
+        end
+      end
     end
   end
 end
