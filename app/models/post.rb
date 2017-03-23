@@ -928,43 +928,30 @@ class Post < ActiveRecord::Base
   end
 
   module FavoriteMethods
-    def clean_fav_string?
-      true
-    end
-
-    def clean_fav_string!
-      array = fav_string.scan(/\S+/).uniq
+    def regen_fav_string!
+      array = favorites.pluck(:user_id).map { |id| "fav:#{id}" }
       self.fav_string = array.join(" ")
-      update_column(:fav_string, fav_string)
+      save
     end
 
     def favorited_by?(user_id)
       fav_string =~ /(?:\A| )fav:#{user_id}(?:\Z| )/
     end
 
-    def append_user_to_fav_string(user_id)
-      update_column(:fav_string, (fav_string + " fav:#{user_id}").strip)
-      clean_fav_string! if clean_fav_string?
-    end
-
     def add_favorite!(user)
       Favorite.add(self, user)
       vote!("up", user) if user.is_gold?
 
-      self.reload # reload to get the new fav_count
+      self.reload # reload to get the new fav_count / fav_string
       user.reload
     rescue PostVote::Error
-    end
-
-    def delete_user_from_fav_string(user_id)
-      update_column(:fav_string, fav_string.gsub(/(?:\A| )fav:#{user_id}(?:\Z| )/, " ").strip)
     end
 
     def remove_favorite!(user)
       Favorite.remove(self, user)
       unvote!(user) if user.is_gold?
 
-      self.reload # reload to get the new fav_count
+      self.reload # reload to get the new fav_count / fav_string
       user.reload
     rescue PostVote::Error
     end
