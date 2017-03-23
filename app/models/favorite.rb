@@ -4,15 +4,6 @@ class Favorite < ActiveRecord::Base
 
   attr_accessible :user_id, :post_id
 
-  # this is necessary because there's no trigger for deleting favorites
-  def self.destroy_all(hash)
-    if hash[:user_id] && hash[:post_id]
-      connection.execute("delete from favorites_#{hash[:user_id] % 100} where user_id = #{hash[:user_id]} and post_id = #{hash[:post_id]}")
-    elsif hash[:user_id]
-      connection.execute("delete from favorites_#{hash[:user_id] % 100} where user_id = #{hash[:user_id]}")
-    end
-  end
-
   def self.add(post, user)
     Favorite.transaction do
       User.where(:id => user.id).select("id").lock("FOR UPDATE NOWAIT").first
