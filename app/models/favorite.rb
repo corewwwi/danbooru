@@ -7,7 +7,7 @@ class Favorite < ActiveRecord::Base
   after_destroy :update_post
 
   def self.add(post, user)
-    Favorite.create!(:user_id => user.id, :post_id => post.id)
+    Favorite.create(user_id: user.id, post_id: post.id)
   end
 
   def self.remove(post, user)
