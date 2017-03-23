@@ -75,6 +75,7 @@ class User < ActiveRecord::Base
   before_create :promote_to_admin_if_first_user
   before_create :customize_new_user
   #after_create :notify_sock_puppets
+  has_many :favorites, lambda {order("favorites.id desc")}, :dependent => :destroy
   has_many :feedback, :class_name => "UserFeedback", :dependent => :destroy
   has_many :posts, :foreign_key => "uploader_id"
   has_many :post_votes
@@ -272,10 +273,6 @@ class User < ActiveRecord::Base
   end
 
   module FavoriteMethods
-    def favorites
-      Favorite.where("user_id % 100 = #{id % 100} and user_id = #{id}").order("id desc")
-    end
-
     def favorite_groups
       FavoriteGroup.for_creator(CurrentUser.user.id).order("updated_at desc")
     end

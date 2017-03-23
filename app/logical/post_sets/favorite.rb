@@ -5,7 +5,7 @@ module PostSets
     def initialize(user_id, page = 1, params = {})
       @params = params
       @user = ::User.find(user_id)
-      @favorites = ::Favorite.for_user(user.id).paginate(page, :limit => limit).order("favorites.id desc")
+      @favorites = @user.favorites.paginate(page, :limit => limit)
     end
 
     def limit
