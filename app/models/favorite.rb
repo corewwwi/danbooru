@@ -2,8 +2,6 @@ class Favorite < ActiveRecord::Base
   belongs_to :post, counter_cache: :fav_count
   belongs_to :user, counter_cache: :favorite_count
 
-  attr_accessible :user_id, :post_id
-
   validates_uniqueness_of :user_id, scope: :post_id
   after_save :update_post
   after_destroy :update_post
