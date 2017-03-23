@@ -19,7 +19,7 @@ class FavoriteTest < ActiveSupport::TestCase
       user1 = FactoryGirl.create(:user)
       p1 = FactoryGirl.create(:post)
 
-      user1.add_favorite!(p1)
+      p1.add_favorite!(user1)
       assert_equal(1, Favorite.count)
 
       Favorite.destroy_all(:user_id => user1.id, :post_id => p1.id)
@@ -32,9 +32,9 @@ class FavoriteTest < ActiveSupport::TestCase
       p1 = FactoryGirl.create(:post)
       p2 = FactoryGirl.create(:post)
 
-      user1.add_favorite!(p1)
-      user1.add_favorite!(p2)
-      user2.add_favorite!(p1)
+      p1.add_favorite!(user1)
+      p2.add_favorite!(user1)
+      p1.add_favorite!(user2)
 
       favorites = user1.favorites.order("id desc")
       assert_equal(2, favorites.count)
@@ -50,8 +50,8 @@ class FavoriteTest < ActiveSupport::TestCase
       user1 = FactoryGirl.create(:user)
       p1 = FactoryGirl.create(:post)
       p2 = FactoryGirl.create(:post)
-      user1.add_favorite!(p1)
-      user1.add_favorite!(p1)
+      p1.add_favorite!(user1)
+      p1.add_favorite!(user1)
 
       assert_equal(1, user1.favorites.count)
     end
