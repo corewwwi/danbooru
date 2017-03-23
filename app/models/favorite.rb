@@ -4,11 +4,12 @@ class Favorite < ActiveRecord::Base
 
   attr_accessible :user_id, :post_id
 
+  validates_uniqueness_of :user_id, scope: :post_id
+
   def self.add(post, user)
     Favorite.transaction do
       User.where(:id => user.id).select("id").lock("FOR UPDATE NOWAIT").first
 
-      return if Favorite.for_user(user.id).where(:user_id => user.id, :post_id => post.id).exists?
       Favorite.create!(:user_id => user.id, :post_id => post.id)
       Post.where(:id => post.id).update_all("fav_count = fav_count + 1")
       post.append_user_to_fav_string(user.id)
