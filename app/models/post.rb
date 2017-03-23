@@ -935,9 +935,7 @@ class Post < ActiveRecord::Base
     def clean_fav_string!
       array = fav_string.scan(/\S+/).uniq
       self.fav_string = array.join(" ")
-      self.fav_count = array.size
       update_column(:fav_string, fav_string)
-      update_column(:fav_count, fav_count)
     end
 
     def favorited_by?(user_id)
@@ -952,6 +950,9 @@ class Post < ActiveRecord::Base
     def add_favorite!(user)
       Favorite.add(self, user)
       vote!("up", user) if user.is_gold?
+
+      self.reload # reload to get the new fav_count
+      user.reload
     rescue PostVote::Error
     end
 
@@ -962,6 +963,9 @@ class Post < ActiveRecord::Base
     def remove_favorite!(user)
       Favorite.remove(self, user)
       unvote!(user) if user.is_gold?
+
+      self.reload # reload to get the new fav_count
+      user.reload
     rescue PostVote::Error
     end
 
