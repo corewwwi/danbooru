@@ -929,9 +929,10 @@ class Post < ActiveRecord::Base
 
   module FavoriteMethods
     def regen_fav_string!
-      array = favorites.pluck(:user_id).map { |id| "fav:#{id}" }
-      self.fav_string = array.join(" ")
-      save
+      with_lock do
+        self.fav_string = favorites.reorder("id ASC").pluck(:user_id).map { |uid| "fav:#{uid}" }.join(" ")
+        update_columns(fav_string: self.fav_string)
+      end
     end
 
     def favorited_by?(user_id)
