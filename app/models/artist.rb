@@ -1,9 +1,9 @@
 class Artist < ActiveRecord::Base
   class RevertError < Exception ; end
 
+  after_initialize :initialize_creator, if: :new_record?
   validates :name, tag_name: true, uniqueness: true, case_sensitive: false, if: :name_changed?
   validate :wiki_is_empty, if: :name_changed?
-  before_create :initialize_creator
   after_save :create_version
   after_save :save_url_string
   after_save :categorize_tag, if: :name_changed?
