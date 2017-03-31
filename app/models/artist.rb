@@ -265,9 +265,7 @@ class Artist < ActiveRecord::Base
     end
 
     def categorize_tag
-      if new_record? || name_changed?
-        Tag.find_or_create_by_name("artist:#{name}")
-      end
+      Tag.find_or_create_by_name("artist:#{name}")
     end
   end
 
@@ -492,7 +490,7 @@ class Artist < ActiveRecord::Base
   end
 
   def initialize_creator
-    self.creator_id = CurrentUser.user.id
+    self.creator_id ||= CurrentUser.user.id
   end
 
   def deletable_by?(user)
