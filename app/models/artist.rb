@@ -6,7 +6,7 @@ class Artist < ActiveRecord::Base
   before_create :initialize_creator
   after_save :create_version
   after_save :save_url_string
-  after_save :categorize_tag
+  after_save :categorize_tag, if: :name_changed?
 
   belongs_to :creator, :class_name => "User"
   has_many :members, :class_name => "Artist", :foreign_key => "group_name", :primary_key => "name"
