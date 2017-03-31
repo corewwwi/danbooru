@@ -1,7 +1,6 @@
 class Artist < ActiveRecord::Base
   class RevertError < Exception ; end
 
-  before_validation :normalize_name
   validates_uniqueness_of :name
   validate :name_is_valid
   validate :wiki_is_empty, :on => :create
@@ -92,7 +91,7 @@ class Artist < ActiveRecord::Base
 
     module ClassMethods
       def normalize_name(name)
-        name.to_s.mb_chars.downcase.strip.gsub(/ /, '_').to_s
+        Tag.normalize_name(name)
       end
     end
 
@@ -108,8 +107,9 @@ class Artist < ActiveRecord::Base
       end
     end
 
-    def normalize_name
-      self.name = Artist.normalize_name(name)
+    def name=(name)
+      name = Artist.normalize_name(name)
+      super(name)
     end
 
     def pretty_name
