@@ -1,14 +1,15 @@
 class Artist < ActiveRecord::Base
   class RevertError < Exception ; end
 
-  before_create :initialize_creator
   before_validation :normalize_name
-  after_save :create_version
-  after_save :save_url_string
-  after_save :categorize_tag
   validates_uniqueness_of :name
   validate :name_is_valid
   validate :wiki_is_empty, :on => :create
+  before_create :initialize_creator
+  after_save :create_version
+  after_save :save_url_string
+  after_save :categorize_tag
+
   belongs_to :creator, :class_name => "User"
   has_many :members, :class_name => "Artist", :foreign_key => "group_name", :primary_key => "name"
   has_many :urls, :dependent => :destroy, :class_name => "ArtistUrl"
@@ -16,6 +17,7 @@ class Artist < ActiveRecord::Base
   has_one :wiki_page, :foreign_key => "title", :primary_key => "name"
   has_one :tag_alias, :foreign_key => "antecedent_name", :primary_key => "name"
   has_one :tag, :foreign_key => "name", :primary_key => "name"
+
   accepts_nested_attributes_for :wiki_page
   attr_accessible :body, :name, :url_string, :other_names, :other_names_comma, :group_name, :wiki_page_attributes, :notes, :as => [:member, :gold, :builder, :platinum, :janitor, :moderator, :default, :admin]
   attr_accessible :is_active, :as => [:builder, :janitor, :moderator, :default, :admin]
