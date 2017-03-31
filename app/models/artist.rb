@@ -1,8 +1,7 @@
 class Artist < ActiveRecord::Base
   class RevertError < Exception ; end
 
-  validates_uniqueness_of :name
-  validate :name_is_valid
+  validates :name, tag_name: true, uniqueness: true, case_sensitive: false, if: :name_changed?
   validate :wiki_is_empty, :on => :create
   before_create :initialize_creator
   after_save :create_version
@@ -92,18 +91,6 @@ class Artist < ActiveRecord::Base
     module ClassMethods
       def normalize_name(name)
         Tag.normalize_name(name)
-      end
-    end
-
-    def name_is_valid
-      if name =~ /^[-~]/
-        errors[:name] << "cannot begin with - or ~"
-        false
-      elsif name =~ /\*/
-        errors[:name] << "cannot contain *"
-        false
-      else
-        true
       end
     end
 
