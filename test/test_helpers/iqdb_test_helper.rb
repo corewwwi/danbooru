@@ -24,7 +24,7 @@ module IqdbTestHelper
 
   def mock_iqdb_matches!(post_or_source, matches)
     source = post_or_source.is_a?(Post) ? post_or_source.complete_preview_file_url : post_or_source
-    url = "http://localhost:3004/similar?key=hunter2&url=#{CGI.escape source}&ref"
+    url = "http://localhost:3004/similar?key=hunter2&url=#{CGI.escape source}&min_score=0&ref"
     body = matches.map { |post| { post_id: post.id } }.to_json
 
     stub_request(:get, url).to_return(body: body)
