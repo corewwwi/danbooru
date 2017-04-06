@@ -23,6 +23,7 @@ module Iqdb
         params = {
           "key" => Danbooru.config.iqdbs_auth_key,
           "url" => url,
+          "min_score" => 0,
           "ref" => ref
         }
         uri = URI.parse("#{Danbooru.config.iqdbs_server}/similar")
