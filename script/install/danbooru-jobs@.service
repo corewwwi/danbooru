@@ -1,0 +1,13 @@
+[Unit]
+Description=Danbooru delayed job processor.
+
+[Service]
+Type=simple
+
+WorkingDirectory=%h/deploy/%i
+Environment=RAILS_ENV=production
+ExecStart=/bin/sh -c 'export PATH="$HOME/.rbenv/shims:$PATH"; export DJ_QUEUE="$(bundle exec rails runner "puts Danbooru.config.server_host")"; exec bundle exec script/delayed_job --queues="default,$DJ_QUEUE" -n 2 run'
+StandardOutput=journal
+
+[Install]
+DefaultInstance=master-evazion

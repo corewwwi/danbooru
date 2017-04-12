@@ -1,0 +1,14 @@
+[Unit]
+Description=Danbooru unicorn app server.
+
+[Service]
+Type=simple
+
+WorkingDirectory=%h/deploy/%i
+Environment=RAILS_ENV=production
+Environment=UNICORN_LISTEN=/run/nginx/unicorn-%i.socket
+ExecStart=/bin/sh -c 'export PATH="$HOME/.rbenv/shims:$PATH"; exec bundle exec unicorn -c config/unicorn/unicorn.rb'
+StandardOutput=journal
+
+[Install]
+DefaultInstance=master-evazion
