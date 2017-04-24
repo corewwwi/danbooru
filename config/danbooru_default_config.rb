@@ -485,9 +485,6 @@ module Danbooru
       false
     end
 
-    def aws_sqs_saved_search_url
-    end
-
     def aws_sqs_reltagcalc_url
     end
 

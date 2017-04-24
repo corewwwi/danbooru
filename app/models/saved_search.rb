@@ -4,15 +4,7 @@ class SavedSearch < ActiveRecord::Base
 
     module ClassMethods
       def enabled?
-        Danbooru.config.aws_sqs_saved_search_url.present?
-      end
-
-      def posts_search_available?
-        enabled? && CurrentUser.is_gold?
-      end
-
-      def sqs_service
-        SqsService.new(Danbooru.config.aws_sqs_saved_search_url)
+        Danbooru.config.listbooru_server.present?
       end
 
       def post_ids(user_id, label = nil)
