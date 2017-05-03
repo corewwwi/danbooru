@@ -488,6 +488,13 @@ module Danbooru
     def twitter_api_secret
     end
 
+    # http://tinysubversions.com/notes/mastodon-bot/
+    def pawoo_client_id
+    end
+
+    def pawoo_client_secret
+    end
+
     def enable_post_search_counts
       false
     end
