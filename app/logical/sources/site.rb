@@ -10,7 +10,7 @@ module Sources
       :file_url, :ugoira_frame_data, :ugoira_content_type, :image_urls,
       :artist_commentary_title, :artist_commentary_desc,
       :dtext_artist_commentary_title, :dtext_artist_commentary_desc,
-      :rewrite_thumbnails, :illust_id_from_url, :translate_tag, :translated_tags, :to => :strategy
+      :rewrite_thumbnails, :illust_id_from_url, :translate_tag, :translated_tags, :api_response, :to => :strategy
 
     def self.strategies
       [Strategies::Pixiv, Strategies::NicoSeiga, Strategies::DeviantArt, Strategies::ArtStation, Strategies::Nijie, Strategies::Twitter, Strategies::Tumblr, Strategies::Pawoo]
@@ -63,7 +63,8 @@ module Sources
           :description => artist_commentary_desc,
           :dtext_title => dtext_artist_commentary_title,
           :dtext_description => dtext_artist_commentary_desc,
-        }
+        },
+        :api_response => api_response,
       }
     end
 

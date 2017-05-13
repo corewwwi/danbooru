@@ -99,6 +99,10 @@ module Sources
         end
       end
 
+      def api_response
+        @metadata.json
+      end
+
       def rewrite_thumbnails(thumbnail_url, is_manga=nil)
         thumbnail_url = rewrite_new_medium_images(thumbnail_url)
         thumbnail_url = rewrite_medium_ugoiras(thumbnail_url)

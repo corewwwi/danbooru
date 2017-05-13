@@ -100,6 +100,11 @@ module Sources
         nil
       end
 
+      # Should contain the raw API response returned by the site. For debugging purposes only.
+      def api_response
+        nil
+      end
+
       def dtext_artist_commentary_title
         self.class.to_dtext(artist_commentary_title)
       end
