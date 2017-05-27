@@ -100,7 +100,7 @@ class Pool < ApplicationRecord
 
       if params[:is_deleted] == "true"
         q = q.deleted
-      else
+      elsif params[:is_deleted] == "false"
         q = q.undeleted
       end
 
