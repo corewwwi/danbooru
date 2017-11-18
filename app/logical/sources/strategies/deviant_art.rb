@@ -43,7 +43,11 @@ module Sources
       def self.to_dtext(text)
         DText.from_html(text) do |element|
           if element.name == "a" && element["href"].present?
-            element["href"] = element["href"].gsub(%r!\Ahttps?://www\.deviantart\.com/users/outgoing\?!i, "")
+            href = element["href"]
+            href = href.gsub(%r!\Ahttps?://www\.deviantart\.com/users/outgoing\?!i, "")
+            href = "http://#{href}" if href !~ %r!\Ahttps?://!i
+
+            element["href"] = href
           end
         end
       end
