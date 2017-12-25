@@ -86,20 +86,26 @@ class ApplicationController < ActionController::Base
       end
 
       @error_message = "The database timed out running your query."
-      render :template => "static/error", :status => 500
+      status = 500
     elsif exception.is_a?(::ActiveRecord::RecordNotFound)
       @error_message = "That record was not found"
-      render :template => "static/error", :status => 404
+      status = 404
     elsif exception.is_a?(NotImplementedError)
-      flash[:notice] = "This feature isn't available: #{@exception.message}"
-      respond_to do |fmt|
-        fmt.html { redirect_to :back }
-        fmt.js { render nothing: true, status: 501 }
-        fmt.json { render template: "static/error", status: 501 }
-        fmt.xml  { render template: "static/error", status: 501 }
+      status = 501
+
+      if request.format == :html
+        flash[:notice] = "This feature isn't available: #{@exception.message}"
+        redirect_to :back
+        return
       end
     else
-      render :template => "static/error", :status => 500
+      status = 500
+    end
+
+    respond_to do |fmt|
+      fmt.js { render nothing: true, status: status }
+      fmt.any(:html, :json, :xml)  { render template: "static/error", status: status }
+      fmt.any { render content_type: "text/html", template: "static/error.html", status: status }
     end
   end
 
