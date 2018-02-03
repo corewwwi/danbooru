@@ -4,9 +4,9 @@ class CommentsController < ApplicationController
   skip_before_action :api_check
 
   def index
-    if params[:group_by] == "comment" || request.format == Mime::ATOM
+    if params[:group_by] == "comment" || request.format == Mime[:atom]
       index_by_comment
-    elsif request.format == Mime::JS
+    elsif request.format == Mime[:js]
       index_for_post
     else
       index_by_post
