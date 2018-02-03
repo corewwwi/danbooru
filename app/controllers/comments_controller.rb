@@ -1,7 +1,7 @@
 class CommentsController < ApplicationController
   respond_to :html, :xml, :json
-  before_filter :member_only, :except => [:index, :search, :show]
-  skip_before_filter :api_check
+  before_action :member_only, :except => [:index, :search, :show]
+  skip_before_action :api_check
 
   def index
     if params[:group_by] == "comment" || request.format == Mime::ATOM

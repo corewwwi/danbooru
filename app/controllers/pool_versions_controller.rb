@@ -1,6 +1,6 @@
 class PoolVersionsController < ApplicationController
   respond_to :html, :xml, :json
-  before_filter :check_availabililty
+  before_action :check_availabililty
 
   def index
     if params[:search] && params[:search][:pool_id].present?

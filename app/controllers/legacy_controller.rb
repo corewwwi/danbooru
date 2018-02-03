@@ -1,5 +1,5 @@
 class LegacyController < ApplicationController
-  before_filter :member_only, :only => [:create_post]
+  before_action :member_only, :only => [:create_post]
   respond_to :json, :xml
 
   def posts

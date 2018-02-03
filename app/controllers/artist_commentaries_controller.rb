@@ -1,6 +1,6 @@
 class ArtistCommentariesController < ApplicationController
   respond_to :html, :xml, :json, :js
-  before_filter :member_only, :except => [:index, :show]
+  before_action :member_only, :except => [:index, :show]
 
   def index
     @commentaries = ArtistCommentary.search(params[:search]).paginate(params[:page], :limit => params[:limit])

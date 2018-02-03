@@ -1,5 +1,5 @@
 class SavedSearchesController < ApplicationController
-  before_filter :check_availability
+  before_action :check_availability
   respond_to :html, :xml, :json, :js
   
   def index

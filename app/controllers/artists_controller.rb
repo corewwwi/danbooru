@@ -1,9 +1,9 @@
 class ArtistsController < ApplicationController
   respond_to :html, :xml, :json
-  before_filter :member_only, :except => [:index, :show, :show_or_new, :banned]
-  before_filter :builder_only, :only => [:destroy]
-  before_filter :admin_only, :only => [:ban, :unban]
-  before_filter :load_artist, :only => [:ban, :unban, :show, :edit, :update, :destroy, :undelete]
+  before_action :member_only, :except => [:index, :show, :show_or_new, :banned]
+  before_action :builder_only, :only => [:destroy]
+  before_action :admin_only, :only => [:ban, :unban]
+  before_action :load_artist, :only => [:ban, :unban, :show, :edit, :update, :destroy, :undelete]
 
   def new
     @artist = Artist.new_with_defaults(params)

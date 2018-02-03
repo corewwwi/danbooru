@@ -1,5 +1,5 @@
 class UserFeedbacksController < ApplicationController
-  before_filter :gold_only, :only => [:new, :edit, :create, :update, :destroy]
+  before_action :gold_only, :only => [:new, :edit, :create, :update, :destroy]
   respond_to :html, :xml, :json
 
   def new

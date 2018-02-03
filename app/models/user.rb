@@ -15,7 +15,7 @@ class User < ApplicationRecord
     ADMIN = 50
   end
 
-  # Used for `before_filter :<role>_only`. Must have a corresponding `is_<role>?` method.
+  # Used for `before_action :<role>_only`. Must have a corresponding `is_<role>?` method.
   Roles = Levels.constants.map(&:downcase) + [
     :anonymous,
     :banned,

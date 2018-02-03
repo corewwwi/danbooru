@@ -1,11 +1,11 @@
 class ForumTopicsController < ApplicationController
   respond_to :html, :xml, :json
-  before_filter :member_only, :except => [:index, :show]
-  before_filter :moderator_only, :only => [:new_merge, :create_merge]
-  before_filter :normalize_search, :only => :index
-  before_filter :load_topic, :only => [:edit, :show, :update, :destroy, :undelete, :new_merge, :create_merge, :subscribe, :unsubscribe]
-  before_filter :check_min_level, :only => [:show, :edit, :update, :new_merge, :create_merge, :destroy, :undelete, :subscribe, :unsubscribe]
-  skip_before_filter :api_check
+  before_action :member_only, :except => [:index, :show]
+  before_action :moderator_only, :only => [:new_merge, :create_merge]
+  before_action :normalize_search, :only => :index
+  before_action :load_topic, :only => [:edit, :show, :update, :destroy, :undelete, :new_merge, :create_merge, :subscribe, :unsubscribe]
+  before_action :check_min_level, :only => [:show, :edit, :update, :new_merge, :create_merge, :destroy, :undelete, :subscribe, :unsubscribe]
+  skip_before_action :api_check
 
   def new
     @forum_topic = ForumTopic.new

@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   respond_to :html, :xml, :json
-  skip_before_filter :api_check
+  skip_before_action :api_check
 
   def new
     @user = User.new

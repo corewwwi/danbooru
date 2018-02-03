@@ -1,9 +1,9 @@
 class ForumPostsController < ApplicationController
   respond_to :html, :xml, :json, :js
-  before_filter :member_only, :except => [:index, :show, :search]
-  before_filter :load_post, :only => [:edit, :show, :update, :destroy, :undelete]
-  before_filter :check_min_level, :only => [:edit, :show, :update, :destroy, :undelete]
-  skip_before_filter :api_check
+  before_action :member_only, :except => [:index, :show, :search]
+  before_action :load_post, :only => [:edit, :show, :update, :destroy, :undelete]
+  before_action :check_min_level, :only => [:edit, :show, :update, :destroy, :undelete]
+  skip_before_action :api_check
   
   def new
     if params[:topic_id]

@@ -1,7 +1,7 @@
 module Maintenance
   module User
     class DmailFiltersController < ApplicationController
-      before_filter :ensure_ownership
+      before_action :ensure_ownership
       respond_to :html, :json, :xml
 
       def edit

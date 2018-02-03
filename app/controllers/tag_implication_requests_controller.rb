@@ -1,5 +1,5 @@
 class TagImplicationRequestsController < ApplicationController
-  before_filter :member_only
+  before_action :member_only
 
   def new
   end

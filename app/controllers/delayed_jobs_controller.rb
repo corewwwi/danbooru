@@ -1,6 +1,6 @@
 class DelayedJobsController < ApplicationController
   respond_to :html, :xml, :json, :js
-  before_filter :admin_only, except: [:index]
+  before_action :admin_only, except: [:index]
 
   def index
     @delayed_jobs = Delayed::Job.order("run_at asc").paginate(params[:page], :limit => params[:limit])

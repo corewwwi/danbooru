@@ -1,19 +1,19 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   helper :pagination
-  before_filter :reset_current_user
-  before_filter :set_current_user
-  after_filter :reset_current_user
-  before_filter :set_title
-  before_filter :normalize_search
-  before_filter :set_started_at_session
-  before_filter :api_check
-  before_filter :set_safe_mode
-  # before_filter :secure_cookies_check
+  before_action :reset_current_user
+  before_action :set_current_user
+  after_action :reset_current_user
+  before_action :set_title
+  before_action :normalize_search
+  before_action :set_started_at_session
+  before_action :api_check
+  before_action :set_safe_mode
+  # before_action :secure_cookies_check
   layout "default"
   force_ssl :if => :ssl_login?
   helper_method :show_moderation_notice?
-  before_filter :enable_cors
+  before_action :enable_cors
 
   rescue_from Exception, :with => :rescue_exception
   rescue_from User::PrivilegeError, :with => :access_denied

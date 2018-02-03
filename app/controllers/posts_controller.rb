@@ -1,6 +1,6 @@
 class PostsController < ApplicationController
-  before_filter :member_only, :except => [:show, :show_seq, :index, :home, :random]
-  before_filter :builder_only, :only => [:copy_notes]
+  before_action :member_only, :except => [:show, :show_seq, :index, :home, :random]
+  before_action :builder_only, :only => [:copy_notes]
   respond_to :html, :xml, :json
 
   def index

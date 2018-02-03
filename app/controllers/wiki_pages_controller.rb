@@ -1,8 +1,8 @@
 class WikiPagesController < ApplicationController
   respond_to :html, :xml, :json, :js
-  before_filter :member_only, :except => [:index, :search, :show, :show_or_new]
-  before_filter :builder_only, :only => [:destroy]
-  before_filter :normalize_search_params, :only => [:index]
+  before_action :member_only, :except => [:index, :search, :show, :show_or_new]
+  before_action :builder_only, :only => [:destroy]
+  before_action :normalize_search_params, :only => [:index]
   
   def new
     @wiki_page = WikiPage.new(wiki_page_params)
