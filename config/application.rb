@@ -27,6 +27,7 @@ module Danbooru
     config.action_mailer.perform_deliveries = true
     config.log_tags = [lambda {|req| "PID:#{Process.pid}"}]
     config.action_controller.action_on_unpermitted_parameters = :raise
+    config.active_record.belongs_to_required_by_default = false
 
     if File.exists?("#{config.root}/REVISION")
       config.x.git_hash = File.read("#{config.root}/REVISION").strip
