@@ -123,12 +123,12 @@ class TagImplication < TagRelationship
       return if skip_secondary_validations
 
       unless WikiPage.titled(consequent_name).exists?
-        self.errors[:base] = "The #{consequent_name} tag needs a corresponding wiki page"
+        self.errors[:base] << "The #{consequent_name} tag needs a corresponding wiki page"
         return false
       end
 
       unless WikiPage.titled(antecedent_name).exists?
-        self.errors[:base] = "The #{antecedent_name} tag needs a corresponding wiki page"
+        self.errors[:base] << "The #{antecedent_name} tag needs a corresponding wiki page"
         return false
       end
     end

@@ -221,7 +221,7 @@ class User < ApplicationRecord
         self.bcrypt_password_hash = User.bcrypt(password)
         return true
       else
-        errors[:old_password] = "is incorrect"
+        errors[:old_password] << "is incorrect"
         return false
       end
     end

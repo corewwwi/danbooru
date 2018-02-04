@@ -146,7 +146,7 @@ class BulkUpdateRequest < ApplicationRecord
       begin
         AliasAndImplicationImporter.new(script, forum_topic_id, "1", skip_secondary_validations).validate!
       rescue RuntimeError => e
-        self.errors[:base] = e.message
+        self.errors[:base] << e.message
         return false
       end
 

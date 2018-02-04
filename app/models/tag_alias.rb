@@ -228,7 +228,7 @@ class TagAlias < TagRelationship
     return if skip_secondary_validations
 
     unless WikiPage.titled(consequent_name).exists?
-      self.errors[:base] = "The #{consequent_name} tag needs a corresponding wiki page"
+      self.errors[:base] << "The #{consequent_name} tag needs a corresponding wiki page"
       return false
     end
   end
@@ -237,7 +237,7 @@ class TagAlias < TagRelationship
     return if skip_secondary_validations
 
     unless Post.fast_count(antecedent_name) >= 50
-      self.errors[:base] = "The #{antecedent_name} tag must have at least 50 posts for an alias to be created"
+      self.errors[:base] << "The #{antecedent_name} tag must have at least 50 posts for an alias to be created"
     end
   end
 
