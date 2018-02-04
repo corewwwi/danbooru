@@ -1051,7 +1051,7 @@ class Post < ApplicationRecord
     end
 
     def remove_from_favorites
-      Favorite.delete_all(post_id: id)
+      Favorite.where(post_id: id).delete_all
       user_ids = fav_string.scan(/\d+/)
       User.where(:id => user_ids).update_all("favorite_count = favorite_count - 1")
       PostVote.where(post_id: id).delete_all
