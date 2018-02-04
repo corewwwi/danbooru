@@ -9,12 +9,10 @@ class DmailTest < ActiveSupport::TestCase
       ActionMailer::Base.delivery_method = :test
       ActionMailer::Base.perform_deliveries = true
       ActionMailer::Base.deliveries = []
-      TestAfterCommit.enabled = true
     end
 
     teardown do
       CurrentUser.user = nil
-      TestAfterCommit.enabled = false
     end
 
     context "spam" do
