@@ -78,4 +78,5 @@ group :test do
   gem "simplecov", :require => false
   gem "timecop"
   gem "webmock"
+  gem "minitest", "~> 5.10.3"
 end
