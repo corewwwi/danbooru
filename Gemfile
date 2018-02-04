@@ -47,6 +47,7 @@ gem 'addressable'
 gem 'httparty'
 gem 'rakismet'
 gem 'recaptcha', require: "recaptcha/rails"
+gem 'activemodel-serializers-xml'
 
 # needed for looser jpeg header compat
 gem 'ruby-imagespec', :require => "image_spec", :git => "https://github.com/r888888888/ruby-imagespec.git", :branch => "exif-fixes"
