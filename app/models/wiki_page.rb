@@ -5,7 +5,7 @@ class WikiPage < ApplicationRecord
   before_save :normalize_other_names
   before_validation :initialize_creator, :on => :create
   before_validation :initialize_updater
-  after_save :create_version
+  before_save :create_version
   belongs_to :creator, :class_name => "User"
   belongs_to :updater, :class_name => "User"
   validates_uniqueness_of :title, :case_sensitive => false
@@ -203,7 +203,7 @@ class WikiPage < ApplicationRecord
   end
 
   def create_new_version
-    versions.create(
+    versions << WikiPageVersion.new(
       :updater_id => CurrentUser.user.id,
       :updater_ip_addr => CurrentUser.ip_addr,
       :title => title,

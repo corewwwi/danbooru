@@ -1321,7 +1321,7 @@ class Post < ApplicationRecord
     end
 
     def update_parent_on_save
-      return unless parent_id_changed? || is_deleted_changed?
+      return unless saved_change_to_parent_id? || saved_change_to_is_deleted?
 
       parent.update_has_children_flag if parent.present?
       Post.find(parent_id_was).update_has_children_flag if parent_id_was.present?
@@ -1454,7 +1454,7 @@ class Post < ApplicationRecord
 
   module VersionMethods
     def create_version(force = false)
-      if new_record? || rating_changed? || source_changed? || parent_id_changed? || tag_string_changed? || force
+      if new_record? || saved_change_to_rating? || saved_change_to_source? || saved_change_to_parent_id? || saved_change_to_tag_string? || force
         create_new_version
       end
     end

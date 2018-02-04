@@ -8,7 +8,7 @@ class ArtistCommentary < ApplicationRecord
   belongs_to :post, required: true
   has_many :versions, lambda {order("artist_commentary_versions.id ASC")}, :class_name => "ArtistCommentaryVersion", :dependent => :destroy, :foreign_key => :post_id, :primary_key => :post_id
   has_one :previous_version, lambda {order(id: :desc)}, :class_name => "ArtistCommentaryVersion", :foreign_key => :post_id, :primary_key => :post_id
-  after_save :create_version
+  before_save :create_version
   after_commit :tag_post
 
   module SearchMethods
@@ -136,7 +136,7 @@ class ArtistCommentary < ApplicationRecord
     end
 
     def create_new_version
-      versions.create(
+      versions << ArtistCommentaryVersion.new(
         :original_title => original_title,
         :original_description => original_description,
         :translated_title => translated_title,

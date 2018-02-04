@@ -359,7 +359,7 @@ class Pool < ApplicationRecord
   end
 
   def update_category_pseudo_tags_for_posts_async
-    if category_changed?
+    if saved_change_to_category?
       delay(:queue => "default").update_category_pseudo_tags_for_posts
     end
   end

@@ -4,9 +4,9 @@ class Artist < ApplicationRecord
 
   before_create :initialize_creator
   before_validation :normalize_name
-  after_save :create_version
-  after_save :categorize_tag
-  after_save :update_wiki
+  before_save :create_version
+  before_save :categorize_tag
+  before_save :update_wiki
   validates_uniqueness_of :name
   validates :name, tag_name: true
   validate :validate_wiki, :on => :create
@@ -264,8 +264,7 @@ class Artist < ApplicationRecord
     end
 
     def create_new_version
-      ArtistVersion.create(
-        :artist_id => id,
+      versions << ArtistVersion.new(
         :name => name,
         :updater_id => CurrentUser.user.id,
         :updater_ip_addr => CurrentUser.ip_addr,
