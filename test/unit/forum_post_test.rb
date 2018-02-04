@@ -116,8 +116,8 @@ class ForumPostTest < ActiveSupport::TestCase
       end
 
       should "not be deletable" do
-        @post.destroy
-        assert_equal(1, ForumPost.count)
+        @post.delete!
+        assert_equal(false, @post.reload.is_deleted)
       end
     end
 

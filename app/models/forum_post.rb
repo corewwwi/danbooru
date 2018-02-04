@@ -15,7 +15,6 @@ class ForumPost < ApplicationRecord
   validate :validate_topic_is_unlocked
   validate :topic_id_not_invalid
   validate :topic_is_not_restricted, :on => :create
-  before_destroy :validate_topic_is_unlocked
   after_save :delete_topic_if_original_post
   after_update(:if => lambda {|rec| rec.updater_id != rec.creator_id}) do |rec|
     ModAction.log("#{CurrentUser.name} updated forum ##{rec.id}",:forum_post_update)
@@ -131,14 +130,8 @@ class ForumPost < ApplicationRecord
   end
 
   def validate_topic_is_unlocked
-    return if CurrentUser.is_moderator?
-    return if topic.nil?
-
-    if topic.is_locked?
+    if topic.try(:is_locked?) && !CurrentUser.is_moderator?
       errors.add(:topic, "is locked")
-      return false
-    else
-      return true
     end
   end
 
