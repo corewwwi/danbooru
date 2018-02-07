@@ -205,7 +205,7 @@ class ApplicationController < ActionController::Base
       if params[:search].is_a?(Hash)
         changed = params[:search].reject! {|k,v| v.blank?}
         unless changed.nil?
-          redirect_to url_for(params)
+          redirect_to url_for(params: params.except(:controller, :action, :id))
         end
       end
     end
