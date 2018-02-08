@@ -14,6 +14,7 @@ class ApplicationController < ActionController::Base
   force_ssl :if => :ssl_login?
   helper_method :show_moderation_notice?
   before_filter :enable_cors
+  before_action :set_cache_headers
 
   rescue_from Exception, :with => :rescue_exception
   rescue_from User::PrivilegeError, :with => :access_denied
@@ -37,6 +38,12 @@ class ApplicationController < ActionController::Base
 
   def enable_cors
     response.headers["Access-Control-Allow-Origin"] = "*"
+  end
+
+  def set_cache_headers
+    if params.dig(:cache, :duration).present?
+      expires_in params.dig(:cache, :duration).to_i.seconds
+    end
   end
 
   def require_reportbooru_key
