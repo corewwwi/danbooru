@@ -68,6 +68,14 @@ group :development, :test do
   gem 'pry-byebug'
   gem 'ruby-prof'
   gem 'foreman'
+
+  gem 'pry-rails'
+  gem 'pry-inline'
+  gem 'meta_request'
+  gem 'memory_profiler'
+  gem 'flamegraph'
+  gem 'stackprof'
+  gem 'rack-mini-profiler'
 end
 
 group :test do
