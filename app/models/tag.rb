@@ -836,6 +836,7 @@ class Tag < ApplicationRecord
     end
 
     def related_tag_array
+      return RelatedTagCalculator.similar_tags(name, n: 25).to_a
       update_related_if_outdated
       related_tags.to_s.split(/ /).in_groups_of(2)
     end
