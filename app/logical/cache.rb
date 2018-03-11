@@ -1,11 +1,11 @@
 class Cache
-  def self.get_multi(keys, prefix)
+  def self.get_multi(keys, prefix, expires_in: nil)
     sanitized_key_to_key_hash = keys.map do |key|
       ["#{prefix}:#{Cache.hash(key)}", key]
     end.to_h
 
     sanitized_keys = sanitized_key_to_key_hash.keys
-    sanitized_key_to_value_hash = Rails.cache.fetch_multi(*sanitized_keys) do |sanitized_key|
+    sanitized_key_to_value_hash = Rails.cache.fetch_multi(*sanitized_keys, expires_in: expires_in) do |sanitized_key|
       key = sanitized_key_to_key_hash[sanitized_key]
       yield key
     end
