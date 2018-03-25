@@ -76,7 +76,7 @@ class Post < ApplicationRecord
     end
   
     def keeper
-      User.find(keeper_id)
+      User.find_by(id: keeper_id)
     end
 
     def initialize_keeper
