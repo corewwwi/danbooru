@@ -63,6 +63,7 @@ class RelatedTagCalculator
         posts_with_tags = posts_with_tags.joins("JOIN tags ON tags.name = tag").where("tags.category" => category_constraint)
       end
 
+      posts_with_tags = Post.from(sample).with_unflattened_tags
       counts = posts_with_tags.order("count(*) DESC").limit(max_results).group("tag").count
       counts
     end
@@ -76,10 +77,9 @@ class RelatedTagCalculator
     convert_hash_to_array(hash).flatten.join(" ")
   end
 
-  # Calculate related tags using the MinHash approximation of the Jaccard index.
-  #
-  # The Jaccard similarity of two sets is the size of their intersection
-  # divided by the size of their union:
+  # Finds tags related to a given tag according to Jaccard similarity. The
+  # Jaccard similarity of two sets is the size of their intersection divided by
+  # the size of their union:
   #
   #   J(A, B) = |A ∩ B| / |A ∪ B|
   #           = |A ∩ B| / (|A| + |B| - |A ∩ B|)
@@ -88,18 +88,19 @@ class RelatedTagCalculator
   # while the size of the union is the post count of an OR search:
   #
   #   |A ∩ B| = {{tagA tagB}}
-  #   |A ∪ B| = {{~tagA ~tagB}}
-  #           = {{tagA}} + {{tagB}} - {{tagA tagB}}
+  #   |A ∪ B| = {{~tagA ~tagB}} = {{tagA}} + {{tagB}} - {{tagA tagB}}
   #
   #   J(tagA, tagB) = {{tagA tagB}} / ({{tagA}} + {{tagB}} - {{tagA tagB}})
   #
-  # However, performing an intersection search ({{tagA tagB}}) is slow, especially
-  # given that we have to do it for *every* potential pair of related tags.
+  # The naive way to find related tags would be to do {{tagA tagB}} searches for each
+  # possible pair of related tags. This would be slow, so we optimize it in two ways:
   #
-  # MinHash optimizes this by approximating the similarity using a random sample
-  # of posts from both tags. We take the sample by essentially doing a
-  # {{tag order:md5 limit:625}} search. These samples are cached, so effectively
-  # we do one search per tag, no matter how many pairs of related tags we compare.
+  # * For small tags, we collect the full set of posts and count how many times each tag
+  # occurs. This gives us all the tag intersection counts in a single tag search.
+  #
+  # * For large tags, we approximate the similarity using MinHash. MinHash uses
+  # a random sample of posts from each tag, and these samples are cached. We
+  # effectively only do one search per tag, even to evaluate many pairs of tags.
   #
   # https://en.wikipedia.org/wiki/MinHash
   # https://robertheaton.com/2014/05/02/jaccard-similarity-and-minhash-for-winners/
@@ -110,53 +111,44 @@ class RelatedTagCalculator
 
     class_methods do
       # Calculate the top N tags most similar to the given tag search.
-      #
       # @return [Hash{String => Float] a hash of tag names to similarity values
-      def similar_tags(tag_search, n: 100, sample_size: SAMPLE_SIZE)
-        candidate_tag_names = frequent_tags(tag_search, n, sample_size)
-        tags_with_similarities = jaccard_similarities(tag_search, candidate_tag_names, sample_size)
-        tags_with_similarities.sort_by { |tag, similarity| [-similarity, tag] }.to_h
+      def similar_tags(search, n: 50, sample_size: SAMPLE_SIZE)
+        search_count = CurrentUser.without_safe_mode { Post.fast_count(search) }
+
+        if search_count <= sample_size
+          tags_with_similarities = similar_tags_by_jaccard(search)
+        else
+          tags_with_similarities = similar_tags_by_minhash(search, n: n, sample_size: sample_size)
+        end
+
+        tags_with_similarities.sort_by { |tag, similarity| [-similarity, tag] }.take(n).to_h
       end
 
-      # Calculate the N most frequently used tags on posts within the given search.
-      #
-      # @return [Array<String>] a list of N tag names
-      def frequent_tags(tag_search, n, sample_size)
-        md5s = samples_posts_for_searches([tag_search], sample_size)[tag_search]
-        sample_posts = Post.where(md5: md5s)
+      # Calculate the tags most similar to the given tag search by the Jaccard index.
+      # @return [Hash{String => Float] a hash of tag names to similarity values
+      def similar_tags_by_jaccard(search)
+        posts = CurrentUser.without_safe_mode { Post.tag_match(search) }
+        tags_with_counts = frequent_tags_for_posts(posts)
 
-        posts_with_tags = Post.from(sample_posts).with_unflattened_tags
-        tag_names = posts_with_tags.order("count(*) DESC").group("tag").limit(n).pluck("tag")
+        tags_with_counts.map do |tag, intersection|
+          union = posts.size + tag.post_count - intersection
+          jaccard = intersection.to_f / union.to_f
 
-        tag_names
-      end
-
-      # Calculates the approximate Jaccard similarity between a given tag and a
-      # list of other tags. These can be any arbitrary tag searches, not just single tags.
-      #
-      # @return [Hash{String => Float] a hash of searches to similarity values
-      def jaccard_similarities(tag_search, candidate_searches, sample_size)
-        sample_posts = sample_posts_for_searches([tag_search] + candidate_searches, sample_size)
-
-        candidate_searches.map do |candidate_search|
-          sample_a = sample_posts[tag_search]
-          sample_b = sample_posts[candidate_search]
-          jaccard = fast_jaccard_similarity(sample_a, sample_b, sample_size)
-
-          [candidate_search, jaccard]
+          [tag.name, jaccard]
         end.to_h
       end
 
-      # Returns a cached random sample of posts for each tag search.
-      #
-      # @return [Hash{String => [String]}] a hash of searches to lists of post md5s
-      def sample_posts_for_searches(tag_searches, sample_size)
-        samples = Cache.get_multi(tag_searches, "minhash:#{sample_size}", expires_in: 24.hours) do |tag_search|
-          Post.sample(tag_search, sample_size).pluck(:md5)
-        end
+      # Calculate the top N tags most similar to the given tag search by MinHash similarity.
+      # @return [Hash{String => Float] a hash of tag names to similarity values
+      def similar_tags_by_minhash(search, n: 50, sample_size: SAMPLE_SIZE)
+        candidate_tag_names = frequent_tags_for_search(search, n, sample_size)
+        minhash_similarities(search, candidate_tag_names, sample_size: sample_size)
       end
 
-      # Approximate the Jaccard similarity between two sample sets using MinHash:
+      # Calculates the Jaccard similarity between a given tag and a list of
+      # other tags. These can be arbitrary tag searches, not just single tags.
+      #
+      # The MinHash approximation is given by:
       #
       #   X = H(k, A ∪ B) = H(k, H(k, A) ∪ H(k, B))
       #   Y = X ∩ H(k, A) ∩ H(k, B)
@@ -164,21 +156,46 @@ class RelatedTagCalculator
       #
       # where H(k, A) means apply a hash function H to each item in set A and take the
       # k smallest items. In other words: H(k, A) is a random sample of k items from set A.
-      def fast_jaccard_similarity(a, b, sample_size)
-        x = (a + b).uniq.sort.take(sample_size)
-        y = x & a & b
+      #
+      # @return [Hash{String => Float] a hash of searches to similarity values
+      def minhash_similarities(tag_search, candidate_searches, sample_size: SAMPLE_SIZE)
+        sample_sets = sample_posts_for_searches([tag_search] + candidate_searches, sample_size)
 
-        y.size.to_f / sample_size.to_f
+        candidate_searches.map do |candidate_search|
+          set_a = sample_sets[tag_search]
+          set_b = sample_sets[candidate_search]
+
+          x = (set_a + set_b).uniq.sort.take(sample_size)
+          y = x & set_a & set_b
+          jaccard = y.size.to_f / sample_size.to_f
+
+          [candidate_search, jaccard]
+        end.to_h
       end
 
-      # Calculate the exact Jaccard similarity between two tags (slow; reference only).
-      def jaccard_similarity(tag1, tag2)
-        CurrentUser.without_safe_mode do
-          intersection = Post.tag_match("#{tag1} #{tag2}").count
-          union = Tag.find_by_name(tag1).post_count + Tag.find_by_name(tag2).post_count - intersection
-
-          intersection.to_f / union.to_f
+      # Returns a cached random sample of posts for each tag search.
+      # @return [Hash{String => [String]}] a hash of searches to lists of post md5s
+      def sample_posts_for_searches(tag_searches, sample_size)
+        samples = Cache.get_multi(tag_searches, "minhash:#{sample_size}", expires_in: 24.hours) do |tag_search|
+          Post.sample(tag_search, sample_size).pluck(:md5)
         end
+      end
+
+      # Calculate the most frequently used tags on the given set of posts.
+      # @return [Hash{Tag => Integer}] a hash from tags to tag frequency counts
+      def frequent_tags_for_posts(posts)
+        tag_names = posts.flat_map(&:tag_array)
+        tags = Tag.where(name: tag_names.uniq).index_by(&:name)
+        tags_with_counts = tag_names.group_by(&:itself).transform_keys(&tags).transform_values(&:count)
+
+        tags_with_counts
+      end
+
+      # Calculate the N most frequently used tags in a sample of posts from the given search.
+      # @return [Array<String>] a list of tag names
+      def frequent_tags_for_search(search, n, sample_size)
+        md5s = sample_posts_for_searches([search], sample_size)[search]
+        Post.where(md5: md5s).with_unflattened_tags.order("count(*) DESC").limit(n).group(:tag).pluck(:tag)
       end
     end
   end
