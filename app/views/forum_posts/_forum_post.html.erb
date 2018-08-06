@@ -21,7 +21,7 @@
         <p class="info">Updated by <%= link_to_user forum_post.updater %> <%= time_ago_in_words_tagged(forum_post.updated_at) %></p>
       <% end %>
       <menu>
-        <li>ID: <%= forum_post.id %></li>
+        <li><%= link_to "Forum ##{forum_post.id}", forum_topic_path(forum_post.topic, :page => params[:page], :anchor => "forum_post_#{forum_post.id}") %></li>
         <% if CurrentUser.is_member? && @forum_topic %>
           <li><%= link_to "Quote", new_forum_post_path(:post_id => forum_post.id), :method => :get, :remote => true %></li>
         <% end %>
@@ -38,11 +38,6 @@
           <% else %>
             <li><%= link_to "Edit", edit_forum_post_path(forum_post.id), :id => "edit_forum_post_link_#{forum_post.id}", :class => "edit_forum_post_link" %></li>
           <% end %>
-        <% end %>
-        <% if params[:controller] == "forum_posts" %>
-          <li><%= link_to "Parent", forum_topic_path(forum_post.topic, :page => forum_post.forum_topic_page, :anchor => "forum_post_#{forum_post.id}") %></li>
-        <% else %>
-          <li><%= link_to "Permalink", forum_post_path(forum_post) %></li>
         <% end %>
         <% if forum_post.votable? %>
           <ul class="votes" id="forum-post-votes-for-<%= forum_post.id %>">
